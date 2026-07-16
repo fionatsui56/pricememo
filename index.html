@@ -107,13 +107,13 @@ function LoginScreen({onLogin}) {
     if(error) { setError(error.message); setLoading(false); }
   };
 
-  return <div style={{minHeight:"100vh",background:C.teal,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",padding:"60px 32px 48px"}}>
-    <div style={{textAlign:"center",width:"100%"}}>
-      <img src="FullName.png" alt="價記 PriceMemo" style={{width:160,height:160,objectFit:"contain",marginBottom:20}}/>
-      <div style={{fontSize:22,fontWeight:800,color:"#fff",marginBottom:8,lineHeight:1.4}}>記住邊度買過幾錢</div>
-      <div style={{fontSize:22,fontWeight:800,color:C.yellow,marginBottom:32}}>下次先知抵唔抵</div>
-      <div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left",background:"rgba(255,255,255,0.08)",borderRadius:16,padding:"20px 24px",marginBottom:8}}>
-        {["📍 記錄唔同地點見過的價格","🔍 即時比較歷史最低價","🎁 追蹤優惠同到期日","📦 涵蓋超市、藥房、街市等"].map(t=><div key={t} style={{fontSize:15,color:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",gap:8}}>{t}</div>)}
+  return <div style={{minHeight:"100vh",background:C.teal,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"48px 32px"}}>
+    <div style={{textAlign:"center",width:"100%",maxWidth:340}}>
+      <img src="FullName.png" alt="價記 PriceMemo" style={{width:150,height:150,objectFit:"contain",marginBottom:16}}/>
+      <div style={{fontSize:22,fontWeight:800,color:"#fff",marginBottom:6,lineHeight:1.4}}>記住邊度買過幾錢</div>
+      <div style={{fontSize:22,fontWeight:800,color:C.yellow,marginBottom:24}}>下次先知抵唔抵</div>
+      <div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left",background:"rgba(255,255,255,0.08)",borderRadius:16,padding:"20px 24px",marginBottom:24}}>
+        {["📍 記錄唔同地點見過的價格","🔍 即時比較歷史最低價","🎁 追蹤優惠同到期日","🛒 涵蓋超市、藥房、街市等"].map(t=><div key={t} style={{fontSize:15,color:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",gap:8}}>{t}</div>)}
       </div>
     </div>
 
@@ -631,7 +631,7 @@ function ProfileScreen({user, products, onLogout}){
         </div>
       </div>
       <div style={{display:"flex",gap:10,marginTop:20}}>
-        {[{l:"我的記錄",v:myRecords.length},{l:"追蹤產品",v:products.length},{l:"貢獻排名",v:"#1"}].map(s=><div key={s.l} style={{flex:1,background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
+        {[{l:"我的記錄",v:myRecords.length},{l:"已記產品",v:new Set(myRecords.map(r=>r.product_id)).size}].map(s=><div key={s.l} style={{flex:1,background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
           <div style={{fontSize:20,fontWeight:800,color:"#fff"}}>{s.v}</div>
           <div style={{fontSize:11,color:"rgba(255,255,255,0.65)"}}>{s.l}</div>
         </div>)}
@@ -658,12 +658,7 @@ function ProfileScreen({user, products, onLogout}){
           </div>
         </div>;
       })}
-      <div style={{fontSize:14,fontWeight:700,color:C.text,margin:"20px 0 10px"}}>設定</div>
-      {[{i:"🔔",l:"通知設定"},{i:"🔒",l:"私隱設定"},{i:"🚩",l:"我的檢舉記錄"}].map(s=><div key={s.l} style={{background:C.white,borderRadius:14,padding:16,marginBottom:10,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}><span style={{fontSize:20}}>{s.i}</span><span style={{fontSize:15,color:C.text}}>{s.l}</span></div>
-        <span style={{color:C.muted}}>›</span>
-      </div>)}
-      <button onClick={handleLogout} style={{width:"100%",background:C.bg,border:`1px solid ${C.coral}`,borderRadius:14,padding:14,fontSize:15,color:C.coral,cursor:"pointer",marginTop:8}}>登出</button>
+      <button onClick={handleLogout} style={{width:"100%",background:C.bg,border:`1px solid ${C.coral}`,borderRadius:14,padding:14,fontSize:15,color:C.coral,cursor:"pointer",marginTop:20}}>登出</button>
     </div>
   </div>;
 }
