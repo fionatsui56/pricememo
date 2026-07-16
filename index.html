@@ -58,47 +58,18 @@ const CATEGORIES = [
 ];
 
 const DISTRICTS = [
-  { region:"港島", areas:[
-    {name:"中環/上環", malls:["國際金融中心商場(IFC)","置地廣場","中環街市","德輔道中"]},
-    {name:"灣仔", malls:["時代廣場附近","太古廣場","灣仔電腦城"]},
-    {name:"銅鑼灣", malls:["時代廣場","皇室堡","利舞臺廣場","百德新街","銅鑼灣廣場"]},
-    {name:"北角", malls:["北角匯","城市花園商場","英皇道"]},
-    {name:"筲箕灣", malls:["愛秩序灣商場","東區走廊"]},
-    {name:"香港仔", malls:["香港仔中心","珍寶坊"]},
-    {name:"薄扶林", malls:["置富坊","薄扶林中心"]},
-  ]},
-  { region:"九龍", areas:[
-    {name:"旺角", malls:["朗豪坊","奧海城一期","奧海城二期","旺角中心","新世紀廣場","家樂坊","西洋菜街"]},
-    {name:"油麻地", malls:["駿發花園商場","廟街"]},
-    {name:"尖沙咀", malls:["海港城","美麗華商場","iSQUARE","K11 Musea","K11","The One","彌敦道"]},
-    {name:"九龍城", malls:["九龍城廣場","宋皇臺站商場","馬頭角道"]},
-    {name:"黃大仙", malls:["黃大仙中心","龍翔商場","鳳德商場"]},
-    {name:"觀塘", malls:["apm","裕民坊","Landmark East","牛頭角淘大商場"]},
-    {name:"深水埗", malls:["西九龍中心","荔枝角道","元州街"]},
-    {name:"長沙灣", malls:["D2 Place ONE","D2 Place TWO","蘇屋商場"]},
-  ]},
-  { region:"新界", areas:[
-    {name:"沙田", malls:["新城市廣場一期","新城市廣場三期","沙田廣場","廣源商場","石門安群街","沙田中心","瀝源商場"]},
-    {name:"大圍", malls:["大圍廣場","美林商場","積福街"]},
-    {name:"馬鞍山", malls:["馬鞍山廣場","迎海薈","鞍誠街"]},
-    {name:"將軍澳", malls:["新都城中心一期","新都城中心二期","東港城","PopCorn","PopCorn 2","坑口中心","寶琳廣場","景林商場"]},
-    {name:"西貢", malls:["西貢市中心","普通道"]},
-    {name:"荃灣", malls:["荃灣廣場","愉景新城","南豐中心","如心廣場","荃灣中心","綠楊坊"]},
-    {name:"葵涌", malls:["葵涌廣場","新葵興廣場","葵芳廣場","青衣城"]},
-    {name:"青衣", malls:["青衣城","青怡花園商場"]},
-    {name:"屯門", malls:["屯門市廣場一期","屯門市廣場二期","V city","置樂花園商場","良景商場","兆麟商場"]},
-    {name:"元朗", malls:["形點I","形點II","YOHO Mall I","YOHO Mall II","元朗廣場","光華廣場","朗屏商場"]},
-    {name:"天水圍", malls:["嘉湖銀座","天澤商場","天恩商場","天慈商場"]},
-    {name:"粉嶺/上水", malls:["上水廣場","名都商場","新都廣場","龍琛路"]},
-    {name:"大埔", malls:["大埔超級城","廣福商場","大埔墟"]},
-    {name:"北區", malls:["石湖墟商場","聯和墟"]},
-  ]},
-  { region:"離島", areas:[
-    {name:"東涌", malls:["東薈城名店倉","逸東商場","映灣園商場"]},
-    {name:"大嶼山其他", malls:["愉景灣商場","梅窩"]},
-    {name:"長洲", malls:["長洲市中心"]},
-    {name:"南丫島", malls:["榕樹灣","索罟灣"]},
-  ]},
+  { region:"港島綫", stations:["堅尼地城","香港大學","西營盤","上環","中環","金鐘","灣仔","銅鑼灣","天后","炮台山","北角","鰂魚涌","太古","筲箕灣","杏花邨","柴灣"] },
+  { region:"南港島綫", stations:["金鐘","海洋公園","黃竹坑","利東","海怡半島"] },
+  { region:"荃灣綫", stations:["中環","金鐘","佐敦","油麻地","旺角","太子","荔景","葵興","葵芳","荔景","青衣","荃灣"] },
+  { region:"觀塘綫", stations:["調景嶺","將軍澳","坑口","寶琳","油塘","牛頭角","觀塘","藍田","九龍灣","彩虹","鑽石山","黃大仙","樂富","九龍塘","石硤尾","太子","旺角","油麻地"] },
+  { region:"將軍澳綫", stations:["寶琳","坑口","將軍澳","調景嶺","油塘","藍田"] },
+  { region:"東涌綫", stations:["香港","九龍","青衣","欣澳","東涌"] },
+  { region:"機場快綫", stations:["香港","九龍","青衣","機場","博覽館"] },
+  { region:"屯馬綫", stations:["屯門","兆康","天水圍","朗屏","元朗","錦上路","荃灣西","柯士甸","尖東","紅磡","何文田","土瓜灣","宋皇臺","馬頭圍","啟德","鑽石山","顯徑","沙田圍","沙田","城門河","火炭","馬場","大圍","烏溪沙","馬鞍山","恆安","石門","第一城"] },
+  { region:"東鐵綫", stations:["金鐘","會展","紅磡","旺角東","九龍塘","大圍","沙田","火炭","馬場","大學","太和","大埔墟","粉嶺","上水","羅湖","落馬洲"] },
+  { region:"西鐵綫/屯馬綫", stations:["屯門","兆康","天水圍","朗屏","元朗","錦上路","荃灣西","美孚","柯士甸","尖東","紅磡"] },
+  { region:"迪士尼綫", stations:["欣澳","迪士尼"] },
+  { region:"離島/其他", stations:["東涌","長洲","梅窩","愉景灣","南丫島","坪洲","大澳","其他"] },
 ];
 
 const CHAIN_STORES = [
@@ -394,40 +365,35 @@ function EditForm({price,onSave,onCancel}){
 
 // ── LOCATION PICKER ───────────────────────────────────────────────────────────
 function LocationPicker({onSelect}){
-  const [selRegion,setSelRegion]=useState(null);
-  const [selArea,setSelArea]=useState(null);
-  const [subMode,setSubMode]=useState("mall");
-  const [custom,setCustom]=useState("");
-  const regionData=DISTRICTS.find(d=>d.region===selRegion);
-  const areaData=regionData?.areas.find(a=>a.name===selArea);
+  const [selLine,setSelLine]=useState(null);
+  const [selStation,setSelStation]=useState(null);
+  const [shopInput,setShopInput]=useState("");
+  const lineData=DISTRICTS.find(d=>d.region===selLine);
+
   return <div>
-    {!selRegion&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-      <div style={{fontSize:13,color:C.muted,marginBottom:10}}>選擇大地區</div>
+    {!selLine&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
+      <div style={{fontSize:13,color:C.muted,marginBottom:10}}>選擇 MTR 綫</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {DISTRICTS.map(d=><button key={d.region} onClick={()=>setSelRegion(d.region)} style={{padding:"10px 20px",borderRadius:12,border:"none",cursor:"pointer",fontSize:15,fontWeight:600,background:C.tealLight,color:C.teal}}>{d.region}</button>)}
+        {DISTRICTS.map(d=><button key={d.region} onClick={()=>setSelLine(d.region)} style={{padding:"8px 14px",borderRadius:20,border:"none",cursor:"pointer",fontSize:13,background:C.tealLight,color:C.teal,fontWeight:600}}>{d.region}</button>)}
       </div>
     </div>}
-    {selRegion&&!selArea&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-      <button onClick={()=>setSelRegion(null)} style={{background:"none",border:"none",color:C.teal,cursor:"pointer",fontSize:13,marginBottom:10,padding:0}}>← {selRegion}</button>
-      <div style={{fontSize:13,color:C.muted,marginBottom:10}}>選擇地區</div>
+
+    {selLine&&!selStation&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
+      <button onClick={()=>setSelLine(null)} style={{background:"none",border:"none",color:C.teal,cursor:"pointer",fontSize:13,marginBottom:10,padding:0}}>← {selLine}</button>
+      <div style={{fontSize:13,color:C.muted,marginBottom:10}}>選擇 MTR 站</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {regionData?.areas.map(a=><button key={a.name} onClick={()=>setSelArea(a.name)} style={{padding:"8px 14px",borderRadius:20,border:"none",cursor:"pointer",fontSize:13,background:C.bg,color:C.text}}>{a.name}</button>)}
+        {lineData?.stations.map(s=><button key={s} onClick={()=>setSelStation(s)} style={{padding:"8px 14px",borderRadius:20,border:"none",cursor:"pointer",fontSize:13,background:C.bg,color:C.text}}>{s}站</button>)}
       </div>
     </div>}
-    {selRegion&&selArea&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-      <button onClick={()=>setSelArea(null)} style={{background:"none",border:"none",color:C.teal,cursor:"pointer",fontSize:13,marginBottom:10,padding:0}}>← {selRegion} · {selArea}</button>
-      <div style={{display:"flex",gap:8,marginBottom:14}}>
-        <button onClick={()=>setSubMode("mall")} style={{flex:1,padding:"8px 0",borderRadius:10,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,background:subMode==="mall"?C.teal:C.bg,color:subMode==="mall"?"#fff":C.text}}>🏬 商場</button>
-        <button onClick={()=>setSubMode("custom")} style={{flex:1,padding:"8px 0",borderRadius:10,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,background:subMode==="custom"?C.teal:C.bg,color:subMode==="custom"?"#fff":C.text}}>🏪 街市／其他</button>
+
+    {selLine&&selStation&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
+      <button onClick={()=>setSelStation(null)} style={{background:"none",border:"none",color:C.teal,cursor:"pointer",fontSize:13,marginBottom:10,padding:0}}>← {selLine} · {selStation}站</button>
+      <div style={{background:C.tealLight,borderRadius:10,padding:12,marginBottom:14}}>
+        <div style={{fontSize:13,color:C.teal,fontWeight:700}}>✅ {selStation}站</div>
       </div>
-      {subMode==="mall"&&<div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-        {areaData?.malls.map(m=><button key={m} onClick={()=>onSelect({region:selRegion,district:selArea,subLocation:m})} style={{padding:"7px 14px",borderRadius:16,border:"none",cursor:"pointer",fontSize:13,background:C.tealLight,color:C.teal}}>{m}</button>)}
-      </div>}
-      {subMode==="custom"&&<div>
-        <div style={{fontSize:13,color:C.muted,marginBottom:8}}>輸入街市／地點名稱</div>
-        <input value={custom} onChange={e=>setCustom(e.target.value)} placeholder="e.g. 沙田街市、村口士多" style={{width:"100%",border:"1px solid #EAE8E3",borderRadius:10,padding:"10px 12px",fontSize:15,outline:"none",boxSizing:"border-box",marginBottom:10}}/>
-        <button onClick={()=>custom&&onSelect({region:selRegion,district:selArea,subLocation:custom})} style={{width:"100%",background:custom?C.teal:"#ccc",border:"none",borderRadius:10,padding:12,fontSize:15,fontWeight:700,color:"#fff",cursor:custom?"pointer":"not-allowed"}}>確認地點</button>
-      </div>}
+      <div style={{fontSize:13,color:C.muted,marginBottom:8}}>商場／街市／地點名稱（選填）</div>
+      <input value={shopInput} onChange={e=>setShopInput(e.target.value)} placeholder="e.g. 新都城、PopCorn、街市、士多" style={{width:"100%",border:"1px solid #EAE8E3",borderRadius:10,padding:"10px 12px",fontSize:15,outline:"none",boxSizing:"border-box",marginBottom:12}}/>
+      <button onClick={()=>onSelect({region:selLine,district:selStation+"站",subLocation:shopInput||selStation+"站"})} style={{width:"100%",background:C.teal,border:"none",borderRadius:10,padding:12,fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer"}}>確認地點</button>
     </div>}
   </div>;
 }
