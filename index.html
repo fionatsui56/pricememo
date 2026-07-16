@@ -57,7 +57,7 @@ const CHAIN_STORES = [
   {type:"便利店", stores:["7-Eleven","OK便利店","Circle K"]},
   {type:"藥房連鎖", stores:["萬寧","屈臣氏","健康工房","莎莎","卓悅"]},
   {type:"網購", stores:["HKTVmall","百佳網購","惠康網購"]},
-  {type:"其他", stores:["街市","士多","麵包店","獨立藥房"]},
+  {type:"其他", stores:["街市","士多","麵包店","獨立藥房","其他地方"]},
 ];
 
 function freshness(date, cat) {
@@ -160,12 +160,10 @@ function ProductCard({product,onClick,bookmarkIds,onToggleBookmark}){
   const hasPromo=prices.some(p=>p.promo&&p.promo_expiry&&new Date(p.promo_expiry)>new Date());
   const isBookmarked=bookmarkIds&&bookmarkIds.includes(product.id);
 
-  return <div style={{background:C.white,borderRadius:16,padding:16,marginBottom:10,boxShadow:"0 2px 8px rgba(23,107,104,0.07)",border:"1px solid #EAE8E3",position:"relative"}}>
-    {/* Bookmark button */}
-    {onToggleBookmark&&<button onClick={e=>{e.stopPropagation();onToggleBookmark(product.id);}} style={{position:"absolute",top:12,right:12,background:"none",border:"none",cursor:"pointer",fontSize:20,opacity:isBookmarked?1:0.3,transition:"opacity 0.2s"}}>🔖</button>}
+  return <div style={{background:C.white,borderRadius:16,padding:16,marginBottom:10,boxShadow:"0 2px 8px rgba(23,107,104,0.07)",border:"1px solid #EAE8E3"}}>
     <div onClick={onClick} style={{cursor:"pointer"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div style={{flex:1,paddingRight:onToggleBookmark?28:0}}>
+        <div style={{flex:1}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,flexWrap:"wrap"}}>
             <span>{cat?.emoji}</span>
             <span style={{fontSize:12,color:C.muted}}>{cat?.label}</span>
@@ -176,10 +174,13 @@ function ProductCard({product,onClick,bookmarkIds,onToggleBookmark}){
           {latest&&f&&<div style={{fontSize:12,color:f.color}}>{f.dot} {f.label} · {latest.shop}</div>}
           {!latest&&<div style={{fontSize:12,color:C.muted}}>未有價格記錄</div>}
         </div>
-        {prices.length>0&&<div style={{textAlign:"right",minWidth:65}}>
-          <div style={{fontSize:22,fontWeight:800,color:C.teal}}>${best}</div>
-          <div style={{fontSize:11,color:C.muted}}>最低價</div>
-        </div>}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,minWidth:70}}>
+          {prices.length>0&&<div style={{textAlign:"right"}}>
+            <div style={{fontSize:22,fontWeight:800,color:C.teal}}>${best}</div>
+            <div style={{fontSize:11,color:C.muted}}>最低價</div>
+          </div>}
+          {onToggleBookmark&&<button onClick={e=>{e.stopPropagation();onToggleBookmark(product.id);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,opacity:isBookmarked?1:0.25,transition:"opacity 0.2s",padding:0}}>🔖</button>}
+        </div>
       </div>
     </div>
   </div>;
@@ -234,7 +235,7 @@ function EditForm({price,onSave,onCancel}){
     </div>
     {f.promo&&<div style={{marginBottom:10}}>
       <div style={{fontSize:12,color:C.muted,marginBottom:4}}>優惠到期日</div>
-      <input type="date" value={f.promoExpiry} onChange={e=>u("promoExpiry",e.target.value)} style={{width:"100%",border:`1px solid ${C.teal}`,borderRadius:8,padding:"8px 10px",fontSize:15,outline:"none",boxSizing:"border-box"}}/>
+      <input type="date" value={f.promoExpiry} onChange={e=>u("promoExpiry",e.target.value)} style={{width:"100%",border:`1px solid ${C.teal}`,borderRadius:8,padding:"8px 10px",fontSize:14,outline:"none",boxSizing:"border-box",maxWidth:"100%"}}/>
     </div>}
     <div style={{display:"flex",gap:8}}>
       <button onClick={onCancel} style={{flex:1,background:C.bg,border:"none",borderRadius:10,padding:10,cursor:"pointer"}}>取消</button>
@@ -324,7 +325,8 @@ function ProductDetail({product:init,onBack,user,onUpdate,setTab,setAddProduct})
           </div>
         </div>;
       })}
-      <button onClick={()=>{setAddProduct(product);setTab("add");}} style={{width:"100%",background:C.yellow,border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:"pointer",marginTop:4}}>＋ 加入新價格記錄</button>
+      <button onClick={()=>{setAddProduct(product);onBack();setTab("add");}} style={{width:"100%",background:C.yellow,border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:"pointer",marginTop:4}}>＋ 加入新價格記錄</button>
+      {user&&product.created_by===user.id&&prices.length===0&&<button onClick={async()=>{if(window.confirm("確定刪除整個產品？")){await supabase.from("products").delete().eq("id",product.id);onUpdate(null);onBack();}}} style={{width:"100%",background:"#FFF0EE",border:`1px solid ${C.coral}`,borderRadius:14,padding:14,fontSize:14,color:C.coral,cursor:"pointer",marginTop:8}}>🗑️ 刪除整個產品</button>}
     </div>
   </div>;
 }
@@ -421,8 +423,12 @@ function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
         </div>
         {/* Shop Name */}
         <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-          <div style={{fontSize:13,color:C.muted,marginBottom:6}}>店鋪名稱{f.shopType&&f.shopType!=="其他"?`（${f.shopType}）`:""}</div>
-          <input value={f.shopName} onChange={e=>u("shopName",e.target.value)} placeholder={f.shopType?`e.g. ${f.shopType}旺角店`:"e.g. 旺角百佳、沙田惠康"} style={{width:"100%",border:"none",outline:"none",fontSize:15,color:C.text,background:"transparent",boxSizing:"border-box"}}/>
+          <div style={{fontSize:13,color:C.muted,marginBottom:6}}>
+            {f.shopType==="其他地方"?"請輸入地方名稱":f.shopType?`${f.shopType} - 分店名稱`:"店鋪名稱"}
+          </div>
+          <input value={f.shopName} onChange={e=>u("shopName",e.target.value)}
+            placeholder={f.shopType==="其他地方"?"e.g. 城門河邊士多、學校福利社":f.shopType?`e.g. ${f.shopType}旺角店`:"e.g. 旺角百佳、沙田惠康"}
+            style={{width:"100%",border:"none",outline:"none",fontSize:15,color:C.text,background:"transparent",boxSizing:"border-box"}}/>
         </div>
         {/* District - optional */}
         <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:20}}>
@@ -452,7 +458,7 @@ function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
               {["特價","買一送一","第二件半價","限時優惠"].map(t=><button key={t} onClick={()=>u("promoType",t)} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:13,background:f.promoType===t?C.coral:C.bg,color:f.promoType===t?"#fff":C.text}}>{t}</button>)}
             </div>
             <div style={{fontSize:13,color:C.muted,marginBottom:6}}>優惠到期日</div>
-            <input type="date" value={f.promoExpiry} onChange={e=>u("promoExpiry",e.target.value)} style={{width:"100%",border:"1px solid #EAE8E3",borderRadius:10,padding:"8px 12px",fontSize:15,outline:"none",boxSizing:"border-box"}}/>
+            <input type="date" value={f.promoExpiry} onChange={e=>u("promoExpiry",e.target.value)} style={{width:"100%",border:"1px solid #EAE8E3",borderRadius:10,padding:"8px 12px",fontSize:14,outline:"none",boxSizing:"border-box",maxWidth:"100%"}}/>
           </div>}
         </div>
         {/* Summary */}
