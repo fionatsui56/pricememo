@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>價記 PriceMemo</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="Icon-180.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="價記">
@@ -28,13 +28,8 @@
 <script type="text/babel">
 const { useState, useEffect } = React;
 
-// ══════════════════════════════════════════════
-// 🔧 填入你的 Supabase 資料
-// ══════════════════════════════════════════════
 const SUPABASE_URL = "https://iugcqecriaixnptcdgko.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Z2NxZWNyaWFpeG5wdGNkZ2tvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxOTIyNDksImV4cCI6MjA5OTc2ODI0OX0.xULmrxdbwjzjiEL8HCtyDYEC6EZiX7NE3xtBJnxmXuM";
-// ══════════════════════════════════════════════
-
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const C = {
@@ -57,27 +52,12 @@ const CATEGORIES = [
   {id:"other",label:"其他",emoji:"➕"},
 ];
 
-const DISTRICTS = [
-  { region:"港島綫", stations:["堅尼地城","香港大學","西營盤","上環","中環","金鐘","灣仔","銅鑼灣","天后","炮台山","北角","鰂魚涌","太古","筲箕灣","杏花邨","柴灣"] },
-  { region:"南港島綫", stations:["金鐘","海洋公園","黃竹坑","利東","海怡半島"] },
-  { region:"荃灣綫", stations:["中環","金鐘","佐敦","油麻地","旺角","太子","荔景","葵興","葵芳","荔景","青衣","荃灣"] },
-  { region:"觀塘綫", stations:["調景嶺","將軍澳","坑口","寶琳","油塘","牛頭角","觀塘","藍田","九龍灣","彩虹","鑽石山","黃大仙","樂富","九龍塘","石硤尾","太子","旺角","油麻地"] },
-  { region:"將軍澳綫", stations:["寶琳","坑口","將軍澳","調景嶺","油塘","藍田"] },
-  { region:"東涌綫", stations:["香港","九龍","青衣","欣澳","東涌"] },
-  { region:"機場快綫", stations:["香港","九龍","青衣","機場","博覽館"] },
-  { region:"屯馬綫", stations:["屯門","兆康","天水圍","朗屏","元朗","錦上路","荃灣西","柯士甸","尖東","紅磡","何文田","土瓜灣","宋皇臺","馬頭圍","啟德","鑽石山","顯徑","沙田圍","沙田","城門河","火炭","馬場","大圍","烏溪沙","馬鞍山","恆安","石門","第一城"] },
-  { region:"東鐵綫", stations:["金鐘","會展","紅磡","旺角東","九龍塘","大圍","沙田","火炭","馬場","大學","太和","大埔墟","粉嶺","上水","羅湖","落馬洲"] },
-  { region:"西鐵綫/屯馬綫", stations:["屯門","兆康","天水圍","朗屏","元朗","錦上路","荃灣西","美孚","柯士甸","尖東","紅磡"] },
-  { region:"迪士尼綫", stations:["欣澳","迪士尼"] },
-  { region:"離島/其他", stations:["東涌","長洲","梅窩","愉景灣","南丫島","坪洲","大澳","其他"] },
-];
-
 const CHAIN_STORES = [
   {type:"超級市場", stores:["百佳","惠康","AEON","一田","大昌食品","Market Place"]},
   {type:"便利店", stores:["7-Eleven","OK便利店","Circle K"]},
   {type:"藥房連鎖", stores:["萬寧","屈臣氏","健康工房","莎莎","卓悅"]},
   {type:"網購", stores:["HKTVmall","百佳網購","惠康網購"]},
-  {type:"其他", stores:["士多","麵包店","獨立藥房","自訂"]},
+  {type:"其他", stores:["街市","士多","麵包店","獨立藥房"]},
 ];
 
 function freshness(date, cat) {
@@ -90,40 +70,61 @@ function freshness(date, cat) {
 }
 const getBest = prices => prices.length ? Math.min(...prices.map(p=>p.price)) : 0;
 
+// ── CONSENT SCREEN ────────────────────────────────────────────────────────────
+function ConsentScreen({onAgree}){
+  const [ticked1, setTicked1] = useState(false);
+  const [ticked2, setTicked2] = useState(false);
+  const canProceed = ticked1 && ticked2;
+  return <div style={{minHeight:"100vh",background:C.teal,display:"flex",flexDirection:"column",padding:"60px 28px 40px"}}>
+    <div style={{textAlign:"center",marginBottom:32}}>
+      <img src="FullName.png" alt="價記 PriceMemo" style={{width:120,height:120,objectFit:"contain",marginBottom:16}}/>
+      <div style={{fontSize:19,fontWeight:800,color:"#fff"}}>使用前請閱讀</div>
+    </div>
+    <div style={{background:"rgba(255,255,255,0.1)",borderRadius:16,padding:20,marginBottom:24,flex:1}}>
+      <div style={{fontSize:14,color:"rgba(255,255,255,0.9)",lineHeight:1.8}}>
+        <div style={{fontWeight:700,fontSize:15,color:C.yellow,marginBottom:12}}>關於價記 PriceMemo</div>
+        <div style={{marginBottom:12}}>價記係一個<strong style={{color:"#fff"}}>公開共享</strong>的格價工具，所有用戶輸入的價格資料均對所有登入用戶可見。</div>
+        <div style={{fontWeight:700,fontSize:14,color:C.yellow,marginBottom:8}}>我們會收集：</div>
+        <div style={{marginBottom:4}}>• 你的 Google 帳號名稱及電郵（用於顯示記錄者）</div>
+        <div style={{marginBottom:12}}>• 你輸入的產品價格及地點資料</div>
+        <div style={{fontWeight:700,fontSize:14,color:C.yellow,marginBottom:8}}>請注意：</div>
+        <div style={{marginBottom:4}}>• 你輸入的所有資料會公開顯示</div>
+        <div style={{marginBottom:4}}>• 系統現為測試階段</div>
+        <div>• 如有問題歡迎提供意見</div>
+      </div>
+    </div>
+    <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:24}}>
+      {[[ticked1,setTicked1,"我同意價記收集我的 Google 帳號資料用於識別記錄者"],[ticked2,setTicked2,"我明白我輸入的價格資料會公開給所有用戶查閱，並同意參與共享價格資料庫"]].map(([val,setter,label],i)=><div key={i} onClick={()=>setter(!val)} style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer",background:"rgba(255,255,255,0.1)",borderRadius:12,padding:14}}>
+        <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${val?C.yellow:"rgba(255,255,255,0.4)"}`,background:val?C.yellow:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}}>
+          {val&&<span style={{color:C.teal,fontSize:14,fontWeight:900}}>✓</span>}
+        </div>
+        <div style={{fontSize:13,color:"rgba(255,255,255,0.9)",lineHeight:1.6}}>{label}</div>
+      </div>)}
+    </div>
+    <button onClick={onAgree} disabled={!canProceed} style={{width:"100%",background:canProceed?C.yellow:"rgba(255,255,255,0.2)",border:"none",borderRadius:16,padding:16,fontSize:16,fontWeight:700,color:canProceed?C.teal:"rgba(255,255,255,0.4)",cursor:canProceed?"pointer":"not-allowed"}}>
+      同意並繼續
+    </button>
+  </div>;
+}
+
 // ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
-function LoginScreen({onLogin}) {
+function LoginScreen(){
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const handleGoogleLogin = async () => {
-    setLoading(true);
-    setError("");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin
-      }
-    });
-    if(error) { setError(error.message); setLoading(false); }
+    setLoading(true); setError("");
+    const {error} = await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin}});
+    if(error){setError(error.message);setLoading(false);}
   };
-
   return <div style={{minHeight:"100vh",background:C.teal,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"48px 32px"}}>
     <div style={{textAlign:"center",width:"100%",maxWidth:340}}>
       <img src="FullName.png" alt="價記 PriceMemo" style={{width:150,height:150,objectFit:"contain",marginBottom:16}}/>
-      <div style={{fontSize:22,fontWeight:800,color:"#fff",marginBottom:6,lineHeight:1.4}}>記住邊度買過幾錢</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#fff",marginBottom:6}}>記住邊度買過幾錢</div>
       <div style={{fontSize:22,fontWeight:800,color:C.yellow,marginBottom:24}}>下次先知抵唔抵</div>
       <div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left",background:"rgba(255,255,255,0.08)",borderRadius:16,padding:"20px 24px",marginBottom:24}}>
-        {["📍 記錄唔同地點見過的價格","🔍 即時比較歷史最低價","🎁 追蹤優惠同到期日","🛒 涵蓋超市、藥房、街市等"].map(t=><div key={t} style={{fontSize:15,color:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",gap:8}}>{t}</div>)}
+        {["📍 記錄唔同地點見過的價格","🔍 即時比較歷史最低價","🎁 追蹤優惠同到期日","🛒 涵蓋超市、藥房、街市等"].map(t=><div key={t} style={{fontSize:15,color:"rgba(255,255,255,0.9)"}}>{t}</div>)}
       </div>
-    </div>
-
-    <div style={{width:"100%",maxWidth:340}}>
-      <button onClick={handleGoogleLogin} disabled={loading} style={{
-        width:"100%",background:C.white,border:"none",borderRadius:16,
-        padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"center",
-        gap:12,cursor:loading?"not-allowed":"pointer",opacity:loading?0.7:1,
-        boxShadow:"0 4px 20px rgba(0,0,0,0.15)",marginBottom:16
-      }}>
+      <button onClick={handleGoogleLogin} disabled={loading} style={{width:"100%",background:C.white,border:"none",borderRadius:16,padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"center",gap:12,cursor:loading?"not-allowed":"pointer",opacity:loading?0.7:1,boxShadow:"0 4px 20px rgba(0,0,0,0.15)"}}>
         <svg width="20" height="20" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -132,10 +133,7 @@ function LoginScreen({onLogin}) {
         </svg>
         <span style={{fontSize:16,fontWeight:700,color:C.text}}>{loading?"登入中...":"用 Google 帳號登入"}</span>
       </button>
-
-      {error && <div style={{background:"rgba(233,112,85,0.15)",borderRadius:12,padding:12,textAlign:"center",color:C.coral,fontSize:14}}>{error}</div>}
-
-
+      {error&&<div style={{marginTop:12,background:"rgba(233,112,85,0.15)",borderRadius:12,padding:12,textAlign:"center",color:C.coral,fontSize:14}}>{error}</div>}
     </div>
   </div>;
 }
@@ -153,36 +151,43 @@ function BottomNav({tab,setTab}){
 }
 
 // ── PRODUCT CARD ──────────────────────────────────────────────────────────────
-function ProductCard({product,onClick}){
-  const prices = product.price_records || [];
-  const best = getBest(prices);
-  const latest = prices.length ? [...prices].sort((a,b)=>new Date(b.recorded_at)-new Date(a.recorded_at))[0] : null;
-  const f = latest ? freshness(latest.recorded_at, product.category) : null;
-  const cat = CATEGORIES.find(c=>c.id===product.category);
-  const hasPromo = prices.some(p=>p.promo&&p.promo_expiry&&new Date(p.promo_expiry)>new Date());
-  return <div onClick={onClick} style={{background:C.white,borderRadius:16,padding:16,marginBottom:10,boxShadow:"0 2px 8px rgba(23,107,104,0.07)",cursor:"pointer",border:"1px solid #EAE8E3"}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-      <div style={{flex:1}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,flexWrap:"wrap"}}>
-          <span style={{fontSize:12}}>{cat?.emoji}</span>
-          <span style={{fontSize:12,color:C.muted}}>{cat?.label}</span>
-          {product.brand&&<span style={{fontSize:12,background:C.tealLight,color:C.teal,borderRadius:6,padding:"1px 7px",fontWeight:600}}>{product.brand}</span>}
-          {hasPromo&&<span style={{fontSize:11,background:C.coral,color:"#fff",borderRadius:6,padding:"1px 6px",fontWeight:600}}>優惠</span>}
+function ProductCard({product,onClick,bookmarkIds,onToggleBookmark}){
+  const prices=product.price_records||[];
+  const best=getBest(prices);
+  const latest=prices.length?[...prices].sort((a,b)=>new Date(b.recorded_at)-new Date(a.recorded_at))[0]:null;
+  const f=latest?freshness(latest.recorded_at,product.category):null;
+  const cat=CATEGORIES.find(c=>c.id===product.category);
+  const hasPromo=prices.some(p=>p.promo&&p.promo_expiry&&new Date(p.promo_expiry)>new Date());
+  const isBookmarked=bookmarkIds&&bookmarkIds.includes(product.id);
+
+  return <div style={{background:C.white,borderRadius:16,padding:16,marginBottom:10,boxShadow:"0 2px 8px rgba(23,107,104,0.07)",border:"1px solid #EAE8E3",position:"relative"}}>
+    {/* Bookmark button */}
+    {onToggleBookmark&&<button onClick={e=>{e.stopPropagation();onToggleBookmark(product.id);}} style={{position:"absolute",top:12,right:12,background:"none",border:"none",cursor:"pointer",fontSize:20,opacity:isBookmarked?1:0.3,transition:"opacity 0.2s"}}>🔖</button>}
+    <div onClick={onClick} style={{cursor:"pointer"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div style={{flex:1,paddingRight:onToggleBookmark?28:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,flexWrap:"wrap"}}>
+            <span>{cat?.emoji}</span>
+            <span style={{fontSize:12,color:C.muted}}>{cat?.label}</span>
+            {product.brand&&<span style={{fontSize:12,background:C.tealLight,color:C.teal,borderRadius:6,padding:"1px 7px",fontWeight:600}}>{product.brand}</span>}
+            {hasPromo&&<span style={{fontSize:11,background:C.coral,color:"#fff",borderRadius:6,padding:"1px 6px",fontWeight:600}}>優惠</span>}
+          </div>
+          <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:4}}>{product.name}</div>
+          {latest&&f&&<div style={{fontSize:12,color:f.color}}>{f.dot} {f.label} · {latest.shop}</div>}
+          {!latest&&<div style={{fontSize:12,color:C.muted}}>未有價格記錄</div>}
         </div>
-        <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:4}}>{product.name}</div>
-        {latest && f && <div style={{fontSize:12,color:f.color}}>{f.dot} {f.label} · {latest.shop}</div>}
-        {!latest && <div style={{fontSize:12,color:C.muted}}>未有價格記錄</div>}
-      </div>
-      <div style={{textAlign:"right",minWidth:65}}>
-        {prices.length > 0 && <><div style={{fontSize:22,fontWeight:800,color:C.teal}}>${best}</div><div style={{fontSize:11,color:C.muted}}>最低價</div></>}
+        {prices.length>0&&<div style={{textAlign:"right",minWidth:65}}>
+          <div style={{fontSize:22,fontWeight:800,color:C.teal}}>${best}</div>
+          <div style={{fontSize:11,color:C.muted}}>最低價</div>
+        </div>}
       </div>
     </div>
   </div>;
 }
 
 // ── HOME ──────────────────────────────────────────────────────────────────────
-function HomeScreen({products,setSelectedProduct,setTab,selectedCat,setSelectedCat}){
-  const filtered = selectedCat ? products.filter(p=>p.category===selectedCat) : products;
+function HomeScreen({products,setSelectedProduct,setTab,selectedCat,setSelectedCat,bookmarkIds,onToggleBookmark}){
+  const filtered=selectedCat?products.filter(p=>p.category===selectedCat):products;
   return <div>
     <div style={{background:C.teal,padding:"52px 20px 20px"}}>
       <div style={{marginBottom:14}}>
@@ -204,147 +209,22 @@ function HomeScreen({products,setSelectedProduct,setTab,selectedCat,setSelectedC
       </div>
     </div>
     <div style={{padding:"16px 16px",background:C.bg,minHeight:"100vh"}}>
-      {filtered.length===0 ? <div style={{textAlign:"center",padding:40,color:C.muted}}>
+      {filtered.length===0?<div style={{textAlign:"center",padding:40,color:C.muted}}>
         <div style={{fontSize:40,marginBottom:12}}>📦</div>
         <div style={{marginBottom:16}}>未有記錄</div>
         <button onClick={()=>setTab("add")} style={{background:C.teal,border:"none",borderRadius:12,padding:"10px 20px",color:"#fff",fontSize:14,cursor:"pointer"}}>＋ 加入第一個記錄</button>
-      </div> : filtered.map(p=><ProductCard key={p.id} product={p} onClick={()=>setSelectedProduct(p)}/>)}
-    </div>
-  </div>;
-}
-
-// ── PRODUCT DETAIL ────────────────────────────────────────────────────────────
-function ProductDetail({product:init, onBack, user, onUpdate}){
-  const [product, setProduct] = useState(init);
-  const [editingPrice, setEditingPrice] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(null);
-  const [sortBy, setSortBy] = useState("price");
-  const [filterDistrict, setFilterDistrict] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const cat = CATEGORIES.find(c=>c.id===product.category);
-  const prices = product.price_records || [];
-  const best = getBest(prices);
-  const districts = [...new Set(prices.map(p=>p.district).filter(Boolean))];
-
-  let display = [...prices];
-  if(filterDistrict) display = display.filter(p=>p.district===filterDistrict);
-  if(sortBy==="price") display.sort((a,b)=>a.price-b.price);
-  if(sortBy==="date") display.sort((a,b)=>new Date(b.recorded_at)-new Date(a.recorded_at));
-  if(sortBy==="district") display.sort((a,b)=>(a.district||"").localeCompare(b.district||""));
-  if(sortBy==="shop") display.sort((a,b)=>a.shop.localeCompare(b.shop));
-
-  const deletePrice = async (id) => {
-    setLoading(true);
-    await supabase.from("price_records").delete().eq("id", id);
-    const updated = {...product, price_records: prices.filter(p=>p.id!==id)};
-    setProduct(updated);
-    onUpdate(updated);
-    setConfirmDelete(null);
-    setLoading(false);
-  };
-
-  const saveEdit = async (id, data) => {
-    setLoading(true);
-    const {data:updated} = await supabase.from("price_records").update({
-      price: data.price, shop: data.shop, district: data.district,
-      sub_location: data.subLocation, promo: data.promo,
-      promo_expiry: data.promoExpiry || null
-    }).eq("id", id).select().single();
-    if(updated) {
-      const newPrices = prices.map(p=>p.id===id?{...p,...updated}:p);
-      const newProduct = {...product, price_records: newPrices};
-      setProduct(newProduct);
-      onUpdate(newProduct);
-    }
-    setEditingPrice(null);
-    setLoading(false);
-  };
-
-  return <div style={{background:C.bg,minHeight:"100vh"}}>
-    <div style={{background:C.teal,padding:"52px 20px 20px"}}>
-      <button onClick={onBack} style={{background:"none",border:"none",color:"#fff",fontSize:15,cursor:"pointer",marginBottom:10,padding:0}}>← 返回</button>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div style={{flex:1}}>
-          {product.brand&&<div style={{fontSize:13,color:C.yellow,marginBottom:2,fontWeight:700}}>{product.brand}</div>}
-          <div style={{fontSize:13,color:"rgba(255,255,255,0.65)"}}>{cat?.emoji} {cat?.label}</div>
-          <div style={{fontSize:19,fontWeight:800,color:"#fff",marginTop:2}}>{product.name}</div>
-        </div>
-        {prices.length>0&&<div style={{textAlign:"right"}}>
-          <div style={{fontSize:30,fontWeight:900,color:C.yellow}}>${best}</div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.65)"}}>最低見過</div>
-        </div>}
-      </div>
-    </div>
-    <div style={{padding:16}}>
-      {prices.length>0&&<div style={{background:C.white,borderRadius:14,padding:12,marginBottom:14}}>
-        <div style={{fontSize:12,color:C.muted,marginBottom:8}}>排序</div>
-        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
-          {[["price","價格"],["date","日期"],["district","地區"],["shop","店鋪"]].map(([v,l])=><button key={v} onClick={()=>setSortBy(v)} style={{padding:"5px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:13,background:sortBy===v?C.teal:C.bg,color:sortBy===v?"#fff":C.text}}>{l}</button>)}
-        </div>
-        {districts.length>0&&<><div style={{fontSize:12,color:C.muted,marginBottom:8}}>地區 Filter</div>
-        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-          <button onClick={()=>setFilterDistrict("")} style={{padding:"5px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:13,background:filterDistrict===""?C.teal:C.bg,color:filterDistrict===""?"#fff":C.text}}>全部</button>
-          {districts.map(d=><button key={d} onClick={()=>setFilterDistrict(d)} style={{padding:"5px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:13,background:filterDistrict===d?C.teal:C.bg,color:filterDistrict===d?"#fff":C.text}}>{d}</button>)}
-        </div></>}
-      </div>}
-
-      <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>價格記錄 ({display.length})</div>
-
-      {display.map(p=>{
-        const f = freshness(p.recorded_at, product.category);
-        const promoActive = p.promo&&p.promo_expiry&&new Date(p.promo_expiry)>new Date();
-        const promoExpired = p.promo&&p.promo_expiry&&new Date(p.promo_expiry)<=new Date();
-        const isBest = p.price===best;
-        const isMe = user && p.user_id===user.id;
-
-        if(editingPrice===p.id) return <EditForm key={p.id} price={p} onSave={d=>saveEdit(p.id,d)} onCancel={()=>setEditingPrice(null)}/>;
-        if(confirmDelete===p.id) return <div key={p.id} style={{background:"#FFF0EE",borderRadius:14,padding:16,marginBottom:10,border:`2px solid ${C.coral}`}}>
-          <div style={{fontWeight:700,color:C.text,marginBottom:4}}>確定刪除呢條記錄？</div>
-          <div style={{fontSize:14,color:C.muted,marginBottom:14}}>{p.shop} · ${p.price}</div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={()=>setConfirmDelete(null)} style={{flex:1,background:C.bg,border:"none",borderRadius:10,padding:10,cursor:"pointer"}}>取消</button>
-            <button onClick={()=>deletePrice(p.id)} disabled={loading} style={{flex:1,background:C.coral,border:"none",borderRadius:10,padding:10,cursor:"pointer",color:"#fff",fontWeight:700}}>確定刪除</button>
-          </div>
-        </div>;
-
-        return <div key={p.id} style={{background:C.white,borderRadius:14,padding:14,marginBottom:10,border:isBest?`2px solid ${C.teal}`:"1px solid #EAE8E3"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-            <div style={{flex:1}}>
-              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
-                <span style={{fontWeight:700,fontSize:15,color:C.text}}>{p.shop}</span>
-                {isBest&&<span style={{fontSize:11,background:C.teal,color:"#fff",borderRadius:6,padding:"1px 7px"}}>最平</span>}
-              </div>
-              {p.district&&<div style={{fontSize:12,color:C.muted,marginBottom:2}}>📍 {p.region&&`${p.region} · `}{p.district}{p.sub_location&&` · ${p.sub_location}`}</div>}
-              <div style={{fontSize:12,color:C.muted,marginBottom:3}}>👤 {p.user_name} · <span style={{fontSize:11}}>記錄者</span></div>
-              <div style={{fontSize:12,color:f.color}}>{f.dot} {f.label}</div>
-              {promoActive&&<div style={{fontSize:12,color:C.coral,marginTop:3,fontWeight:600}}>🎁 {p.promo} · 至 {new Date(p.promo_expiry).toLocaleDateString("zh-HK")}</div>}
-              {promoExpired&&<div style={{fontSize:12,color:C.muted,marginTop:3}}>⏰ {p.promo}（已過期）</div>}
-            </div>
-            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
-              <div style={{fontSize:24,fontWeight:800,color:isBest?C.teal:C.text}}>${p.price}</div>
-              <div style={{display:"flex",gap:6}}>
-                {isMe?<>
-                  <button onClick={()=>setEditingPrice(p.id)} style={{background:C.tealLight,border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.teal}}>✏️ 改</button>
-                  <button onClick={()=>setConfirmDelete(p.id)} style={{background:"#FFF0EE",border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.coral}}>🗑️</button>
-                </>:<button onClick={()=>alert("已收到檢舉，感謝！")} style={{background:C.bg,border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.muted}}>🚩</button>}
-              </div>
-            </div>
-          </div>
-        </div>;
-      })}
-      <button onClick={()=>alert("請用底部➕記錄按鈕加入新價格")} style={{width:"100%",background:C.yellow,border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:"pointer",marginTop:4}}>＋ 加入新價格記錄</button>
+      </div>:filtered.map(p=><ProductCard key={p.id} product={p} onClick={()=>setSelectedProduct(p)} bookmarkIds={bookmarkIds} onToggleBookmark={onToggleBookmark}/>)}
     </div>
   </div>;
 }
 
 // ── EDIT FORM ─────────────────────────────────────────────────────────────────
 function EditForm({price,onSave,onCancel}){
-  const [f,setF]=useState({price:price.price,shop:price.shop,district:price.district||"",subLocation:price.sub_location||"",promo:price.promo||"",promoExpiry:price.promo_expiry?new Date(price.promo_expiry).toISOString().split("T")[0]:""});
-  const u=(k,v)=>setF(prev=>({...prev,[k]:v}));
+  const [f,setF]=useState({price:price.price,shop:price.shop,district:price.district||"",promo:price.promo||"",promoExpiry:price.promo_expiry?new Date(price.promo_expiry).toISOString().split("T")[0]:""});
+  const u=(k,v)=>setF(p=>({...p,[k]:v}));
   return <div style={{background:C.tealLight,borderRadius:14,padding:14,marginBottom:10,border:`2px solid ${C.teal}`}}>
     <div style={{fontWeight:700,color:C.teal,marginBottom:12}}>✏️ 編輯記錄</div>
-    {[["price","價格 ($)","number"],["shop","店鋪全名","text"],["district","地區","text"],["subLocation","商場/地點","text"]].map(([k,l,t])=><div key={k} style={{marginBottom:10}}>
+    {[["price","價格 ($)","number"],["shop","店鋪名","text"],["district","地區（選填）","text"]].map(([k,l,t])=><div key={k} style={{marginBottom:10}}>
       <div style={{fontSize:12,color:C.muted,marginBottom:4}}>{l}</div>
       <input type={t} value={f[k]} onChange={e=>u(k,t==="number"?Number(e.target.value):e.target.value)} style={{width:"100%",border:`1px solid ${C.teal}`,borderRadius:8,padding:"8px 10px",fontSize:15,outline:"none",boxSizing:"border-box"}}/>
     </div>)}
@@ -363,142 +243,195 @@ function EditForm({price,onSave,onCancel}){
   </div>;
 }
 
-// ── LOCATION PICKER ───────────────────────────────────────────────────────────
-function LocationPicker({onSelect}){
-  const [selLine,setSelLine]=useState(null);
-  const [selStation,setSelStation]=useState(null);
-  const [shopInput,setShopInput]=useState("");
-  const lineData=DISTRICTS.find(d=>d.region===selLine);
+// ── PRODUCT DETAIL ────────────────────────────────────────────────────────────
+function ProductDetail({product:init,onBack,user,onUpdate,setTab,setAddProduct}){
+  const [product,setProduct]=useState(init);
+  const [editingPrice,setEditingPrice]=useState(null);
+  const [confirmDelete,setConfirmDelete]=useState(null);
+  const [loading,setLoading]=useState(false);
+  const cat=CATEGORIES.find(c=>c.id===product.category);
+  const prices=product.price_records||[];
+  const best=getBest(prices);
+  const display=[...prices].sort((a,b)=>a.price-b.price);
 
-  return <div>
-    {!selLine&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-      <div style={{fontSize:13,color:C.muted,marginBottom:10}}>選擇 MTR 綫</div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {DISTRICTS.map(d=><button key={d.region} onClick={()=>setSelLine(d.region)} style={{padding:"8px 14px",borderRadius:20,border:"none",cursor:"pointer",fontSize:13,background:C.tealLight,color:C.teal,fontWeight:600}}>{d.region}</button>)}
-      </div>
-    </div>}
+  const deletePrice=async(id)=>{
+    setLoading(true);
+    await supabase.from("price_records").delete().eq("id",id);
+    const updated={...product,price_records:prices.filter(p=>p.id!==id)};
+    setProduct(updated);onUpdate(updated);setConfirmDelete(null);setLoading(false);
+  };
+  const saveEdit=async(id,data)=>{
+    setLoading(true);
+    const {data:updated}=await supabase.from("price_records").update({price:data.price,shop:data.shop,district:data.district,promo:data.promo,promo_expiry:data.promoExpiry||null}).eq("id",id).select().single();
+    if(updated){const np=prices.map(p=>p.id===id?{...p,...updated}:p);const np2={...product,price_records:np};setProduct(np2);onUpdate(np2);}
+    setEditingPrice(null);setLoading(false);
+  };
 
-    {selLine&&!selStation&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-      <button onClick={()=>setSelLine(null)} style={{background:"none",border:"none",color:C.teal,cursor:"pointer",fontSize:13,marginBottom:10,padding:0}}>← {selLine}</button>
-      <div style={{fontSize:13,color:C.muted,marginBottom:10}}>選擇 MTR 站</div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {lineData?.stations.map(s=><button key={s} onClick={()=>setSelStation(s)} style={{padding:"8px 14px",borderRadius:20,border:"none",cursor:"pointer",fontSize:13,background:C.bg,color:C.text}}>{s}站</button>)}
+  return <div style={{background:C.bg,minHeight:"100vh"}}>
+    <div style={{background:C.teal,padding:"52px 20px 20px"}}>
+      <button onClick={onBack} style={{background:"none",border:"none",color:"#fff",fontSize:15,cursor:"pointer",marginBottom:10,padding:0}}>← 返回</button>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div style={{flex:1}}>
+          {product.brand&&<div style={{fontSize:13,color:C.yellow,marginBottom:2,fontWeight:700}}>{product.brand}</div>}
+          <div style={{fontSize:13,color:"rgba(255,255,255,0.65)"}}>{cat?.emoji} {cat?.label}</div>
+          <div style={{fontSize:19,fontWeight:800,color:"#fff",marginTop:2}}>{product.name}</div>
+        </div>
+        {prices.length>0&&<div style={{textAlign:"right"}}>
+          <div style={{fontSize:30,fontWeight:900,color:C.yellow}}>${best}</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,0.65)"}}>最低見過</div>
+        </div>}
       </div>
-    </div>}
-
-    {selLine&&selStation&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-      <button onClick={()=>setSelStation(null)} style={{background:"none",border:"none",color:C.teal,cursor:"pointer",fontSize:13,marginBottom:10,padding:0}}>← {selLine} · {selStation}站</button>
-      <div style={{background:C.tealLight,borderRadius:10,padding:12,marginBottom:14}}>
-        <div style={{fontSize:13,color:C.teal,fontWeight:700}}>✅ {selStation}站</div>
-      </div>
-      <div style={{fontSize:13,color:C.muted,marginBottom:8}}>商場／街市／地點名稱（選填）</div>
-      <input value={shopInput} onChange={e=>setShopInput(e.target.value)} placeholder="e.g. 新都城、PopCorn、街市、士多" style={{width:"100%",border:"1px solid #EAE8E3",borderRadius:10,padding:"10px 12px",fontSize:15,outline:"none",boxSizing:"border-box",marginBottom:12}}/>
-      <button onClick={()=>onSelect({region:selLine,district:selStation+"站",subLocation:shopInput||selStation+"站"})} style={{width:"100%",background:C.teal,border:"none",borderRadius:10,padding:12,fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer"}}>確認地點</button>
-    </div>}
+    </div>
+    <div style={{padding:16}}>
+      <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>價格記錄 ({display.length})</div>
+      {display.map(p=>{
+        const f=freshness(p.recorded_at,product.category);
+        const promoActive=p.promo&&p.promo_expiry&&new Date(p.promo_expiry)>new Date();
+        const promoExpired=p.promo&&p.promo_expiry&&new Date(p.promo_expiry)<=new Date();
+        const isBest=p.price===best;
+        const isMe=user&&p.user_id===user.id;
+        if(editingPrice===p.id)return <EditForm key={p.id} price={p} onSave={d=>saveEdit(p.id,d)} onCancel={()=>setEditingPrice(null)}/>;
+        if(confirmDelete===p.id)return <div key={p.id} style={{background:"#FFF0EE",borderRadius:14,padding:16,marginBottom:10,border:`2px solid ${C.coral}`}}>
+          <div style={{fontWeight:700,color:C.text,marginBottom:4}}>確定刪除？</div>
+          <div style={{fontSize:14,color:C.muted,marginBottom:14}}>{p.shop} · ${p.price}</div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>setConfirmDelete(null)} style={{flex:1,background:C.bg,border:"none",borderRadius:10,padding:10,cursor:"pointer"}}>取消</button>
+            <button onClick={()=>deletePrice(p.id)} disabled={loading} style={{flex:1,background:C.coral,border:"none",borderRadius:10,padding:10,cursor:"pointer",color:"#fff",fontWeight:700}}>刪除</button>
+          </div>
+        </div>;
+        return <div key={p.id} style={{background:C.white,borderRadius:14,padding:14,marginBottom:10,border:isBest?`2px solid ${C.teal}`:"1px solid #EAE8E3"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
+                <span style={{fontWeight:700,fontSize:15,color:C.text}}>{p.shop}</span>
+                {isBest&&<span style={{fontSize:11,background:C.teal,color:"#fff",borderRadius:6,padding:"1px 7px"}}>最平</span>}
+              </div>
+              {p.district&&<div style={{fontSize:12,color:C.muted,marginBottom:2}}>📍 {p.district}</div>}
+              <div style={{fontSize:12,color:C.muted,marginBottom:3}}>👤 {p.user_name}</div>
+              <div style={{fontSize:12,color:f.color}}>{f.dot} {f.label}</div>
+              {promoActive&&<div style={{fontSize:12,color:C.coral,marginTop:3,fontWeight:600}}>🎁 {p.promo} · 至 {new Date(p.promo_expiry).toLocaleDateString("zh-HK")}</div>}
+              {promoExpired&&<div style={{fontSize:12,color:C.muted,marginTop:3}}>⏰ {p.promo}（已過期）</div>}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+              <div style={{fontSize:24,fontWeight:800,color:isBest?C.teal:C.text}}>${p.price}</div>
+              <div style={{display:"flex",gap:6}}>
+                {isMe?<>
+                  <button onClick={()=>setEditingPrice(p.id)} style={{background:C.tealLight,border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.teal}}>✏️</button>
+                  <button onClick={()=>setConfirmDelete(p.id)} style={{background:"#FFF0EE",border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.coral}}>🗑️</button>
+                </>:<button onClick={()=>alert("已收到檢舉，感謝！")} style={{background:C.bg,border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.muted}}>🚩</button>}
+              </div>
+            </div>
+          </div>
+        </div>;
+      })}
+      <button onClick={()=>{setAddProduct(product);setTab("add");}} style={{width:"100%",background:C.yellow,border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:"pointer",marginTop:4}}>＋ 加入新價格記錄</button>
+    </div>
   </div>;
 }
 
 // ── ADD SCREEN ────────────────────────────────────────────────────────────────
-function AddScreen({user, onAdded}){
-  const [step,setStep]=useState(1);
-  const [loc,setLoc]=useState(null);
-  const [f,setF]=useState({name:"",brand:"",category:"",shopType:"",shopName:"",price:"",promo:false,promoType:"",promoExpiry:""});
+function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
+  const [step,setStep]=useState(prefillProduct?2:1);
   const [saving,setSaving]=useState(false);
   const [success,setSuccess]=useState(false);
-  const u=(k,v)=>setF(prev=>({...prev,[k]:v}));
-  const autoShop=loc&&f.shopType&&f.shopType!=="自訂"?`${f.shopType}・${loc.subLocation}・${loc.district}`:f.shopName;
+  const [f,setF]=useState({
+    name:prefillProduct?.name||"",
+    brand:prefillProduct?.brand||"",
+    category:prefillProduct?.category||"",
+    productId:prefillProduct?.id||null,
+    shopType:"",shopName:"",district:"",
+    price:"",promo:false,promoType:"",promoExpiry:""
+  });
+  const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
-  const handleSave = async () => {
+  useEffect(()=>{
+    if(prefillProduct){
+      setF(p=>({...p,name:prefillProduct.name,brand:prefillProduct.brand||"",category:prefillProduct.category,productId:prefillProduct.id}));
+      setStep(2);
+    }
+  },[prefillProduct]);
+
+  const handleSave=async()=>{
     setSaving(true);
-    try {
-      // 搵或建立產品
-      let productId;
-      const {data:existing} = await supabase.from("products").select("id").eq("name",f.name).eq("brand",f.brand||"").maybeSingle();
-      if(existing) {
-        productId = existing.id;
-      } else {
-        const {data:newProduct} = await supabase.from("products").insert({name:f.name,brand:f.brand||null,category:f.category}).select().single();
-        productId = newProduct.id;
+    try{
+      let productId=f.productId;
+      if(!productId){
+        const {data:existing}=await supabase.from("products").select("id").eq("name",f.name).eq("brand",f.brand||"").maybeSingle();
+        if(existing){productId=existing.id;}
+        else{const {data:np}=await supabase.from("products").insert({name:f.name,brand:f.brand||null,category:f.category}).select().single();productId=np.id;}
       }
-      // 加入價格記錄
       await supabase.from("price_records").insert({
-        product_id: productId,
-        user_id: user.id,
-        user_name: user.user_metadata?.full_name || user.email,
-        price: Number(f.price),
-        region: loc?.region || null,
-        district: loc?.district || null,
-        sub_location: loc?.subLocation || null,
-        shop: f.shopName || autoShop,
-        promo: f.promo ? f.promoType : null,
-        promo_expiry: f.promo && f.promoExpiry ? f.promoExpiry : null,
+        product_id:productId,user_id:user.id,
+        user_name:user.user_metadata?.full_name||user.email,
+        price:Number(f.price),district:f.district||null,
+        shop:f.shopName||f.shopType,
+        promo:f.promo?f.promoType:null,
+        promo_expiry:f.promo&&f.promoExpiry?f.promoExpiry:null,
       });
       setSuccess(true);
+      clearPrefill();
       onAdded();
-      setTimeout(()=>{
-        setSuccess(false);
-        setStep(1);
-        setLoc(null);
-        setF({name:"",brand:"",category:"",shopType:"",shopName:"",price:"",promo:false,promoType:"",promoExpiry:""});
-      }, 1500);
-    } catch(e) {
-      alert("儲存失敗，請重試");
-    }
+      setTimeout(()=>{setSuccess(false);setStep(1);setF({name:"",brand:"",category:"",productId:null,shopType:"",shopName:"",district:"",price:"",promo:false,promoType:"",promoExpiry:""});},1500);
+    }catch(e){alert("儲存失敗，請重試");}
     setSaving(false);
   };
 
-  if(success) return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+  if(success)return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
     <div style={{fontSize:60,marginBottom:16}}>✅</div>
     <div style={{fontSize:20,fontWeight:700,color:C.teal}}>記錄成功！</div>
   </div>;
 
   return <div style={{background:C.bg,minHeight:"100vh"}}>
     <div style={{background:C.teal,padding:"52px 20px 20px"}}>
-      <div style={{fontSize:19,fontWeight:800,color:"#fff",marginBottom:12}}>記錄價格</div>
+      <div style={{fontSize:19,fontWeight:800,color:"#fff",marginBottom:12}}>{prefillProduct?"加入新價格記錄":"記錄價格"}</div>
       <div style={{display:"flex",gap:6,marginBottom:6}}>
         {[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?C.yellow:"rgba(255,255,255,0.25)"}}/>)}
       </div>
-      <div style={{fontSize:12,color:"rgba(255,255,255,0.65)"}}>{["第1步：產品資料","第2步：購買地點","第3步：價格詳情"][step-1]}</div>
+      <div style={{fontSize:12,color:"rgba(255,255,255,0.65)"}}>{["第1步：產品資料","第2步：店鋪資料","第3步：價格詳情"][step-1]}</div>
     </div>
     <div style={{padding:16}}>
       {step===1&&<div>
-        {[["name","產品名稱","e.g. 蘇打水 12罐"],["brand","品牌（選填）","e.g. 彩明、可口可樂"]].map(([k,l,ph])=><div key={k} style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-          <div style={{fontSize:13,color:C.muted,marginBottom:6}}>{l}</div>
-          <input value={f[k]} onChange={e=>u(k,e.target.value)} placeholder={ph} style={{width:"100%",border:"none",outline:"none",fontSize:16,color:C.text,background:"transparent",boxSizing:"border-box"}}/>
-        </div>)}
-        <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:20}}>
-          <div style={{fontSize:13,color:C.muted,marginBottom:10}}>分類</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-            {CATEGORIES.map(c=><button key={c.id} onClick={()=>u("category",c.id)} style={{padding:"7px 12px",borderRadius:20,border:"none",cursor:"pointer",fontSize:13,background:f.category===c.id?C.teal:C.bg,color:f.category===c.id?"#fff":C.text,fontWeight:f.category===c.id?700:400}}>{c.emoji} {c.label}</button>)}
+        {prefillProduct?<div style={{background:C.tealLight,borderRadius:14,padding:14,marginBottom:14}}>
+          <div style={{fontSize:13,color:C.teal,fontWeight:700}}>{prefillProduct.name}</div>
+        </div>:<>
+          {[["name","產品名稱","e.g. 蘇打水 12罐"],["brand","品牌（選填）","e.g. 彩明"]].map(([k,l,ph])=><div key={k} style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
+            <div style={{fontSize:13,color:C.muted,marginBottom:6}}>{l}</div>
+            <input value={f[k]} onChange={e=>u(k,e.target.value)} placeholder={ph} style={{width:"100%",border:"none",outline:"none",fontSize:16,color:C.text,background:"transparent",boxSizing:"border-box"}}/>
+          </div>)}
+          <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:20}}>
+            <div style={{fontSize:13,color:C.muted,marginBottom:10}}>分類</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+              {CATEGORIES.map(c=><button key={c.id} onClick={()=>u("category",c.id)} style={{padding:"7px 12px",borderRadius:20,border:"none",cursor:"pointer",fontSize:13,background:f.category===c.id?C.teal:C.bg,color:f.category===c.id?"#fff":C.text,fontWeight:f.category===c.id?700:400}}>{c.emoji} {c.label}</button>)}
+            </div>
           </div>
-        </div>
-        <button onClick={()=>f.name&&f.category&&setStep(2)} style={{width:"100%",background:f.name&&f.category?C.yellow:"#ccc",border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:f.name&&f.category?"pointer":"not-allowed"}}>下一步 →</button>
+        </>}
+        <button onClick={()=>setStep(2)} disabled={!prefillProduct&&(!f.name||!f.category)} style={{width:"100%",background:prefillProduct||(f.name&&f.category)?C.yellow:"#ccc",border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:"pointer"}}>下一步 →</button>
       </div>}
 
       {step===2&&<div>
-        <LocationPicker onSelect={setLoc}/>
-        {loc&&<div>
-          <div style={{background:C.tealLight,borderRadius:14,padding:14,marginBottom:14}}>
-            <div style={{fontSize:13,color:C.teal,fontWeight:700,marginBottom:4}}>✅ 已選地點</div>
-            <div style={{fontSize:14,color:C.text}}>📍 {loc.region} · {loc.district} · {loc.subLocation}</div>
-          </div>
-          <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:14}}>
-            <div style={{fontSize:13,color:C.muted,marginBottom:10}}>店鋪類型</div>
-            {CHAIN_STORES.map(cs=><div key={cs.type} style={{marginBottom:8}}>
-              <div style={{fontSize:11,color:C.muted,marginBottom:6,fontWeight:600}}>{cs.type}</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                {cs.stores.map(s=><button key={s} onClick={()=>{u("shopType",s);if(s!=="自訂")u("shopName",`${s}・${loc.subLocation}・${loc.district}`);}} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:13,background:f.shopType===s?C.teal:C.bg,color:f.shopType===s?"#fff":C.text}}>{s}</button>)}
-              </div>
-            </div>)}
-          </div>
-          <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:20}}>
-            <div style={{fontSize:13,color:C.muted,marginBottom:6}}>店鋪全名（可修改）</div>
-            <input value={f.shopName||autoShop} onChange={e=>u("shopName",e.target.value)} style={{width:"100%",border:"none",outline:"none",fontSize:15,color:C.text,background:"transparent",boxSizing:"border-box"}}/>
-          </div>
-        </div>}
+        {/* Shop Type */}
+        <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
+          <div style={{fontSize:13,color:C.muted,marginBottom:10}}>店鋪類型</div>
+          {CHAIN_STORES.map(cs=><div key={cs.type} style={{marginBottom:8}}>
+            <div style={{fontSize:11,color:C.muted,marginBottom:6,fontWeight:600}}>{cs.type}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {cs.stores.map(s=><button key={s} onClick={()=>u("shopType",s)} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:13,background:f.shopType===s?C.teal:C.bg,color:f.shopType===s?"#fff":C.text}}>{s}</button>)}
+            </div>
+          </div>)}
+        </div>
+        {/* Shop Name */}
+        <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
+          <div style={{fontSize:13,color:C.muted,marginBottom:6}}>店鋪名稱{f.shopType&&f.shopType!=="其他"?`（${f.shopType}）`:""}</div>
+          <input value={f.shopName} onChange={e=>u("shopName",e.target.value)} placeholder={f.shopType?`e.g. ${f.shopType}旺角店`:"e.g. 旺角百佳、沙田惠康"} style={{width:"100%",border:"none",outline:"none",fontSize:15,color:C.text,background:"transparent",boxSizing:"border-box"}}/>
+        </div>
+        {/* District - optional */}
+        <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:20}}>
+          <div style={{fontSize:13,color:C.muted,marginBottom:6}}>地區（選填）</div>
+          <input value={f.district} onChange={e=>u("district",e.target.value)} placeholder="e.g. 旺角、將軍澳、沙田" style={{width:"100%",border:"none",outline:"none",fontSize:15,color:C.text,background:"transparent",boxSizing:"border-box"}}/>
+        </div>
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>setStep(1)} style={{flex:1,background:C.bg,border:"none",borderRadius:14,padding:16,fontSize:15,color:C.text,cursor:"pointer"}}>← 返回</button>
-          <button onClick={()=>loc&&f.shopType&&setStep(3)} style={{flex:2,background:loc&&f.shopType?C.yellow:"#ccc",border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:loc&&f.shopType?"pointer":"not-allowed"}}>下一步 →</button>
+          <button onClick={()=>(f.shopName||f.shopType)&&setStep(3)} style={{flex:2,background:(f.shopName||f.shopType)?C.yellow:"#ccc",border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:(f.shopName||f.shopType)?"pointer":"not-allowed"}}>下一步 →</button>
         </div>
       </div>}
 
@@ -508,13 +441,13 @@ function AddScreen({user, onAdded}){
           <input type="number" value={f.price} onChange={e=>u("price",e.target.value)} placeholder="0" style={{width:"100%",border:"none",outline:"none",fontSize:32,fontWeight:800,color:C.teal,background:"transparent",boxSizing:"border-box"}}/>
         </div>
         <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:f.promo?12:0}}>
             <span style={{fontSize:15,fontWeight:600,color:C.text}}>有優惠？</span>
             <button onClick={()=>u("promo",!f.promo)} style={{width:44,height:26,borderRadius:13,border:"none",cursor:"pointer",background:f.promo?C.coral:"#ccc",position:"relative"}}>
               <div style={{width:20,height:20,borderRadius:10,background:"#fff",position:"absolute",top:3,left:f.promo?21:3,transition:"left 0.2s"}}/>
             </button>
           </div>
-          {f.promo&&<div style={{marginTop:12}}>
+          {f.promo&&<div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
               {["特價","買一送一","第二件半價","限時優惠"].map(t=><button key={t} onClick={()=>u("promoType",t)} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:13,background:f.promoType===t?C.coral:C.bg,color:f.promoType===t?"#fff":C.text}}>{t}</button>)}
             </div>
@@ -522,11 +455,12 @@ function AddScreen({user, onAdded}){
             <input type="date" value={f.promoExpiry} onChange={e=>u("promoExpiry",e.target.value)} style={{width:"100%",border:"1px solid #EAE8E3",borderRadius:10,padding:"8px 12px",fontSize:15,outline:"none",boxSizing:"border-box"}}/>
           </div>}
         </div>
+        {/* Summary */}
         <div style={{background:C.tealLight,borderRadius:14,padding:14,marginBottom:16}}>
           <div style={{fontSize:13,fontWeight:700,color:C.teal,marginBottom:8}}>確認記錄</div>
-          {[["產品",`${f.brand?f.brand+" · ":""}${f.name}`],["地點",loc?`${loc.region} · ${loc.district} · ${loc.subLocation}`:"-"],["店鋪",f.shopName||autoShop||"-"],["價格",f.price?`$${f.price}`:"-"]].map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}>
+          {[["產品",`${f.brand?f.brand+" · ":""}${f.name}`],["店鋪",f.shopName||f.shopType||"-"],["地區",f.district||"（未填）"],["價格",f.price?`$${f.price}`:"-"]].map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}>
             <span style={{color:C.muted}}>{l}</span>
-            <span style={{color:C.text,fontWeight:600,textAlign:"right",maxWidth:"60%"}}>{v}</span>
+            <span style={{color:C.text,fontWeight:600}}>{v}</span>
           </div>)}
         </div>
         <div style={{display:"flex",gap:10}}>
@@ -539,15 +473,11 @@ function AddScreen({user, onAdded}){
 }
 
 // ── SEARCH ────────────────────────────────────────────────────────────────────
-function SearchScreen({products,setSelectedProduct}){
+function SearchScreen({products,setSelectedProduct,bookmarkIds,onToggleBookmark}){
   const [q,setQ]=useState("");
   const [fCat,setFCat]=useState("");
-  const [fRegion,setFRegion]=useState("");
-  const [fDist,setFDist]=useState("");
   const [sort,setSort]=useState("name");
-  const regionData=DISTRICTS.find(d=>d.region===fRegion);
-  const distNames=regionData?.areas.map(a=>a.name)||[];
-  let filtered=products.filter(p=>(p.name.toLowerCase().includes(q.toLowerCase())||(p.brand&&p.brand.toLowerCase().includes(q.toLowerCase())))&&(fCat===""||p.category===fCat)&&(fRegion===""||p.price_records?.some(pr=>pr.region===fRegion))&&(fDist===""||p.price_records?.some(pr=>pr.district===fDist)));
+  let filtered=products.filter(p=>(p.name.toLowerCase().includes(q.toLowerCase())||(p.brand&&p.brand.toLowerCase().includes(q.toLowerCase())))&&(fCat===""||p.category===fCat));
   if(sort==="price")filtered.sort((a,b)=>getBest(a.price_records||[])-getBest(b.price_records||[]));
   if(sort==="name")filtered.sort((a,b)=>a.name.localeCompare(b.name));
   return <div style={{background:C.bg,minHeight:"100vh"}}>
@@ -560,66 +490,71 @@ function SearchScreen({products,setSelectedProduct}){
     </div>
     <div style={{background:C.white,padding:"10px 12px",borderBottom:"1px solid #EAE8E3"}}>
       <div style={{display:"flex",gap:6,overflowX:"auto",marginBottom:8}}>
-        <button onClick={()=>setFCat("")} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:12,whiteSpace:"nowrap",background:fCat===""?C.teal:C.bg,color:fCat===""?"#fff":C.text}}>全部分類</button>
+        <button onClick={()=>setFCat("")} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:12,whiteSpace:"nowrap",background:fCat===""?C.teal:C.bg,color:fCat===""?"#fff":C.text}}>全部</button>
         {CATEGORIES.map(c=><button key={c.id} onClick={()=>setFCat(c.id)} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:12,whiteSpace:"nowrap",background:fCat===c.id?C.teal:C.bg,color:fCat===c.id?"#fff":C.text}}>{c.emoji} {c.label}</button>)}
       </div>
-      <div style={{display:"flex",gap:6,overflowX:"auto",marginBottom:8}}>
-        <button onClick={()=>{setFRegion("");setFDist("");}} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:12,whiteSpace:"nowrap",background:fRegion===""?C.teal:C.bg,color:fRegion===""?"#fff":C.text}}>全部地區</button>
-        {DISTRICTS.map(d=><button key={d.region} onClick={()=>{setFRegion(d.region);setFDist("");}} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:12,whiteSpace:"nowrap",background:fRegion===d.region?C.teal:C.bg,color:fRegion===d.region?"#fff":C.text}}>{d.region}</button>)}
-      </div>
-      {fRegion&&<div style={{display:"flex",gap:6,overflowX:"auto",marginBottom:8}}>
-        <button onClick={()=>setFDist("")} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:12,whiteSpace:"nowrap",background:fDist===""?C.teal:C.bg,color:fDist===""?"#fff":C.text}}>所有{fRegion}</button>
-        {distNames.map(d=><button key={d} onClick={()=>setFDist(d)} style={{padding:"6px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:12,whiteSpace:"nowrap",background:fDist===d?C.teal:C.bg,color:fDist===d?"#fff":C.text}}>{d}</button>)}
-      </div>}
       <div style={{display:"flex",gap:6,alignItems:"center"}}>
         <span style={{fontSize:12,color:C.muted}}>排序：</span>
         {[["name","名稱"],["price","最低價"]].map(([v,l])=><button key={v} onClick={()=>setSort(v)} style={{padding:"5px 12px",borderRadius:16,border:"none",cursor:"pointer",fontSize:12,background:sort===v?C.teal:C.bg,color:sort===v?"#fff":C.text}}>{l}</button>)}
       </div>
     </div>
     <div style={{padding:"12px 16px"}}>
-      {filtered.length===0?<div style={{textAlign:"center",padding:40,color:C.muted}}><div style={{fontSize:36,marginBottom:10}}>🔍</div>冇搵到相關產品</div>:filtered.map(p=><ProductCard key={p.id} product={p} onClick={()=>setSelectedProduct(p)}/>)}
+      {filtered.length===0?<div style={{textAlign:"center",padding:40,color:C.muted}}><div style={{fontSize:36,marginBottom:10}}>🔍</div>冇搵到相關產品</div>:filtered.map(p=><ProductCard key={p.id} product={p} onClick={()=>setSelectedProduct(p)} bookmarkIds={bookmarkIds} onToggleBookmark={onToggleBookmark}/>)}
     </div>
   </div>;
 }
 
 // ── BOOKMARKS ─────────────────────────────────────────────────────────────────
-function BookmarksScreen({products,setSelectedProduct,user}){
-  const [bookmarkIds,setBookmarkIds]=useState([]);
-  useEffect(()=>{
-    if(!user) return;
-    supabase.from("bookmarks").select("product_id").eq("user_id",user.id).then(({data})=>{
-      if(data) setBookmarkIds(data.map(b=>b.product_id));
-    });
-  },[user]);
+function BookmarksScreen({products,setSelectedProduct,bookmarkIds,toggleBookmark}){
+  const [loading,setLoading]=useState(false);
   const bm=products.filter(p=>bookmarkIds.includes(p.id));
+
   return <div style={{background:C.bg,minHeight:"100vh"}}>
     <div style={{background:C.teal,padding:"52px 20px 24px"}}>
       <div style={{fontSize:19,fontWeight:800,color:"#fff"}}>常買清單 🔖</div>
-      <div style={{fontSize:13,color:"rgba(255,255,255,0.65)",marginTop:4}}>長按產品可加入／移除</div>
+      <div style={{fontSize:13,color:"rgba(255,255,255,0.65)",marginTop:4}}>撳產品右上角 🔖 可加入／移除</div>
     </div>
     <div style={{padding:16}}>
-      {bm.length===0?<div style={{textAlign:"center",padding:40,color:C.muted}}><div style={{fontSize:36,marginBottom:10}}>🔖</div>未有常買清單</div>:bm.map(p=><ProductCard key={p.id} product={p} onClick={()=>setSelectedProduct(p)}/>)}
+      {loading?<div style={{textAlign:"center",padding:40,color:C.muted}}>載入中...</div>:
+      bm.length===0?<div style={{textAlign:"center",padding:40,color:C.muted}}>
+        <div style={{fontSize:36,marginBottom:10}}>🔖</div>
+        <div style={{marginBottom:8}}>未有常買清單</div>
+        <div style={{fontSize:13}}>去主頁撳產品右上角 🔖 加入</div>
+      </div>:bm.map(p=><ProductCard key={p.id} product={p} onClick={()=>setSelectedProduct(p)} bookmarkIds={bookmarkIds} onToggleBookmark={toggleBookmark}/>)}
     </div>
   </div>;
 }
 
 // ── PROFILE ───────────────────────────────────────────────────────────────────
-function ProfileScreen({user, products, onLogout}){
+function ProfileScreen({user,onLogout}){
   const [myRecords,setMyRecords]=useState([]);
+  const [editingId,setEditingId]=useState(null);
+  const [confirmDelete,setConfirmDelete]=useState(null);
+  const [loading,setLoading]=useState(false);
+
   useEffect(()=>{
-    if(!user) return;
-    supabase.from("price_records").select("*, products(name,brand,category)").eq("user_id",user.id).order("recorded_at",{ascending:false}).then(({data})=>{
-      if(data) setMyRecords(data);
-    });
+    if(!user)return;
+    supabase.from("price_records").select("*, products(name,brand,category)").eq("user_id",user.id).order("recorded_at",{ascending:false}).then(({data})=>{if(data)setMyRecords(data);});
   },[user]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    onLogout();
+  const handleLogout=async()=>{await supabase.auth.signOut();onLogout();};
+
+  const deleteRecord=async(id)=>{
+    setLoading(true);
+    await supabase.from("price_records").delete().eq("id",id);
+    setMyRecords(myRecords.filter(r=>r.id!==id));
+    setConfirmDelete(null);setLoading(false);
   };
 
-  const displayName = user?.user_metadata?.full_name || user?.email || "用戶";
-  const avatar = user?.user_metadata?.avatar_url;
+  const saveRecord=async(id,data)=>{
+    setLoading(true);
+    const {data:updated}=await supabase.from("price_records").update({price:data.price,shop:data.shop,district:data.district,promo:data.promo,promo_expiry:data.promoExpiry||null}).eq("id",id).select().single();
+    if(updated)setMyRecords(myRecords.map(r=>r.id===id?{...r,...updated}:r));
+    setEditingId(null);setLoading(false);
+  };
+
+  const displayName=user?.user_metadata?.full_name||user?.email||"用戶";
+  const avatar=user?.user_metadata?.avatar_url;
 
   return <div style={{background:C.bg,minHeight:"100vh"}}>
     <div style={{background:C.teal,padding:"52px 20px 28px"}}>
@@ -640,8 +575,17 @@ function ProfileScreen({user, products, onLogout}){
     <div style={{padding:16}}>
       <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>我的記錄</div>
       {myRecords.length===0?<div style={{textAlign:"center",padding:30,color:C.muted}}>未有記錄</div>:myRecords.map((r,i)=>{
-        const f=freshness(r.recorded_at, r.products?.category);
+        const f=freshness(r.recorded_at,r.products?.category);
         const cat=CATEGORIES.find(c=>c.id===r.products?.category);
+        if(editingId===r.id)return <EditForm key={r.id} price={{...r,district:r.district||""}} onSave={d=>saveRecord(r.id,d)} onCancel={()=>setEditingId(null)}/>;
+        if(confirmDelete===r.id)return <div key={r.id} style={{background:"#FFF0EE",borderRadius:14,padding:16,marginBottom:10,border:`2px solid ${C.coral}`}}>
+          <div style={{fontWeight:700,color:C.text,marginBottom:4}}>確定刪除？</div>
+          <div style={{fontSize:14,color:C.muted,marginBottom:14}}>{r.shop} · ${r.price}</div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>setConfirmDelete(null)} style={{flex:1,background:C.bg,border:"none",borderRadius:10,padding:10,cursor:"pointer"}}>取消</button>
+            <button onClick={()=>deleteRecord(r.id)} disabled={loading} style={{flex:1,background:C.coral,border:"none",borderRadius:10,padding:10,cursor:"pointer",color:"#fff",fontWeight:700}}>刪除</button>
+          </div>
+        </div>;
         return <div key={i} style={{background:C.white,borderRadius:14,padding:14,marginBottom:10,border:"1px solid #EAE8E3"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
             <div style={{flex:1}}>
@@ -650,11 +594,17 @@ function ProfileScreen({user, products, onLogout}){
                 {r.products?.brand&&<span style={{fontSize:12,background:C.tealLight,color:C.teal,borderRadius:6,padding:"1px 7px",fontWeight:600}}>{r.products.brand}</span>}
               </div>
               <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>{r.products?.name}</div>
-              <div style={{fontSize:12,color:C.muted,marginBottom:2}}>📍 {r.shop}</div>
+              <div style={{fontSize:12,color:C.muted,marginBottom:2}}>🏪 {r.shop}{r.district?` · 📍${r.district}`:""}</div>
               <div style={{fontSize:12,color:f.color}}>{f.dot} {f.label}</div>
               {r.promo&&r.promo_expiry&&new Date(r.promo_expiry)>new Date()&&<div style={{fontSize:12,color:C.coral,marginTop:2,fontWeight:600}}>🎁 {r.promo}</div>}
             </div>
-            <div style={{fontSize:22,fontWeight:800,color:C.teal}}>${r.price}</div>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+              <div style={{fontSize:22,fontWeight:800,color:C.teal}}>${r.price}</div>
+              <div style={{display:"flex",gap:6}}>
+                <button onClick={()=>setEditingId(r.id)} style={{background:C.tealLight,border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.teal}}>✏️</button>
+                <button onClick={()=>setConfirmDelete(r.id)} style={{background:"#FFF0EE",border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.coral}}>🗑️</button>
+              </div>
+            </div>
           </div>
         </div>;
       })}
@@ -665,50 +615,85 @@ function ProfileScreen({user, products, onLogout}){
 
 // ── MAIN APP ──────────────────────────────────────────────────────────────────
 function App(){
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("home");
-  const [sel, setSel] = useState(null);
-  const [selCat, setSelCat] = useState("");
-  const [products, setProducts] = useState([]);
+  const [user,setUser]=useState(null);
+  const [loading,setLoading]=useState(true);
+  const [consented,setConsented]=useState(false);
+  const [tab,setTab]=useState("home");
+  const [sel,setSel]=useState(null);
+  const [selCat,setSelCat]=useState("");
+  const [products,setProducts]=useState([]);
+  const [addProduct,setAddProduct]=useState(null);
+  const [bookmarkIds,setBookmarkIds]=useState([]);
+
+  const loadBookmarks=async(uid)=>{
+    const {data}=await supabase.from("bookmarks").select("product_id").eq("user_id",uid);
+    if(data)setBookmarkIds(data.map(b=>b.product_id));
+  };
+
+  const toggleBookmark=async(productId)=>{
+    if(!user)return;
+    if(bookmarkIds.includes(productId)){
+      await supabase.from("bookmarks").delete().eq("user_id",user.id).eq("product_id",productId);
+      setBookmarkIds(bookmarkIds.filter(id=>id!==productId));
+    } else {
+      await supabase.from("bookmarks").insert({user_id:user.id,product_id:productId});
+      setBookmarkIds([...bookmarkIds,productId]);
+    }
+  };
 
   useEffect(()=>{
     supabase.auth.getSession().then(({data:{session}})=>{
-      setUser(session?.user || null);
+      setUser(session?.user||null);
       setLoading(false);
     });
-    const {data:{subscription}} = supabase.auth.onAuthStateChange((_,session)=>{
-      setUser(session?.user || null);
-    });
+    const {data:{subscription}}=supabase.auth.onAuthStateChange((_,session)=>{setUser(session?.user||null);});
     return ()=>subscription.unsubscribe();
   },[]);
 
-  const loadProducts = async () => {
-    const {data} = await supabase.from("products").select("*, price_records(*)").order("created_at",{ascending:false});
-    if(data) setProducts(data);
+  useEffect(()=>{
+    if(user){
+      const stored=localStorage.getItem(`consented_${user.id}`);
+      if(stored)setConsented(true);
+    }
+  },[user]);
+
+  const handleConsent=()=>{
+    localStorage.setItem(`consented_${user.id}`,"true");
+    setConsented(true);
   };
 
-  useEffect(()=>{ if(user) loadProducts(); },[user]);
+  const loadProducts=async()=>{
+    const {data}=await supabase.from("products").select("*, price_records(*)").order("created_at",{ascending:false});
+    if(data)setProducts(data);
+  };
 
-  if(loading) return <div style={{minHeight:"100vh",background:C.teal,display:"flex",alignItems:"center",justifyContent:"center"}}>
+  useEffect(()=>{
+    if(user&&consented){
+      loadProducts();
+      loadBookmarks(user.id);
+    }
+  },[user,consented]);
+
+  if(loading)return <div style={{minHeight:"100vh",background:C.teal,display:"flex",alignItems:"center",justifyContent:"center"}}>
     <div style={{textAlign:"center"}}>
-      <div style={{fontSize:32,fontWeight:900,color:"#fff",marginBottom:8}}>價記</div>
-      <div style={{fontSize:16,color:C.yellow}}>PriceMemo</div>
+      <img src="FullName.png" alt="價記" style={{width:120,height:120,objectFit:"contain",marginBottom:12}}/>
+      <div style={{fontSize:16,color:C.yellow}}>載入中...</div>
     </div>
   </div>;
 
-  if(!user) return <LoginScreen onLogin={setUser}/>;
+  if(!user)return <LoginScreen/>;
+  if(!consented)return <ConsentScreen onAgree={handleConsent}/>;
 
-  if(sel) return <div style={{maxWidth:430,margin:"0 auto",fontFamily:"'PingFang HK','Noto Sans HK',system-ui,sans-serif",minHeight:"100vh"}}>
-    <ProductDetail product={sel} onBack={()=>setSel(null)} user={user} onUpdate={updated=>{setProducts(products.map(p=>p.id===updated.id?updated:p));}}/>
+  if(sel)return <div style={{maxWidth:430,margin:"0 auto",fontFamily:"'PingFang HK','Noto Sans HK',system-ui,sans-serif",minHeight:"100vh"}}>
+    <ProductDetail product={sel} onBack={()=>setSel(null)} user={user} onUpdate={updated=>setProducts(products.map(p=>p.id===updated.id?updated:p))} setTab={setTab} setAddProduct={setAddProduct}/>
   </div>;
 
   return <div style={{maxWidth:430,margin:"0 auto",fontFamily:"'PingFang HK','Noto Sans HK',system-ui,sans-serif",background:C.bg,minHeight:"100vh",paddingBottom:80}}>
-    {tab==="home"&&<HomeScreen products={products} setSelectedProduct={setSel} setTab={setTab} selectedCat={selCat} setSelectedCat={setSelCat}/>}
-    {tab==="search"&&<SearchScreen products={products} setSelectedProduct={setSel}/>}
-    {tab==="add"&&<AddScreen user={user} onAdded={()=>{loadProducts();setTab("home");}}/>}
-    {tab==="bookmarks"&&<BookmarksScreen products={products} setSelectedProduct={setSel} user={user}/>}
-    {tab==="profile"&&<ProfileScreen user={user} products={products} onLogout={()=>setUser(null)}/>}
+    {tab==="home"&&<HomeScreen products={products} setSelectedProduct={setSel} setTab={setTab} selectedCat={selCat} setSelectedCat={setSelCat} bookmarkIds={bookmarkIds} onToggleBookmark={toggleBookmark}/>}
+    {tab==="search"&&<SearchScreen products={products} setSelectedProduct={setSel} bookmarkIds={bookmarkIds} onToggleBookmark={toggleBookmark}/>}
+    {tab==="add"&&<AddScreen user={user} onAdded={()=>{loadProducts();setTab("home");}} prefillProduct={addProduct} clearPrefill={()=>setAddProduct(null)}/>}
+    {tab==="bookmarks"&&<BookmarksScreen products={products} setSelectedProduct={setSel} bookmarkIds={bookmarkIds} toggleBookmark={toggleBookmark}/>}
+    {tab==="profile"&&<ProfileScreen user={user} onLogout={()=>{setUser(null);setConsented(false);}}/>}
     <BottomNav tab={tab} setTab={setTab}/>
   </div>;
 }
