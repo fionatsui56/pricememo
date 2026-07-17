@@ -179,10 +179,15 @@ function LoginScreen(){
   const handleEmailRegister = async () => {
     if(!displayName.trim()){setError("請輸入顯示名稱");return;}
     setLoading(true); setError("");
-    const {error} = await supabase.auth.signUp({email, password, options:{data:{full_name:displayName}}});
-    if(error){setError(error.message);setLoading(false);}
-    else{setError("");alert("註冊成功！請查看電郵確認帳號，然後登入。");setMode("email-login");}
-    setLoading(false);
+    const {data, error} = await supabase.auth.signUp({email, password, options:{data:{full_name:displayName}}});
+    if(error){setError(error.message);setLoading(false);return;}
+    if(data?.user){
+      // 直接登入成功，唔需要確認電郵
+      setLoading(false);
+    } else {
+      setError("註冊失敗，請重試");
+      setLoading(false);
+    }
   };
 
   const inputStyle = {width:"100%",border:"none",borderBottom:"1px solid rgba(255,255,255,0.3)",outline:"none",fontSize:16,color:"#fff",background:"transparent",padding:"10px 0",boxSizing:"border-box",marginBottom:16};
