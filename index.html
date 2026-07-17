@@ -53,11 +53,11 @@ const CATEGORIES = [
 ];
 
 const CHAIN_STORES = [
-  {type:"超級市場", stores:["百佳","惠康","AEON","一田","大昌食品","Market Place"]},
-  {type:"便利店", stores:["7-Eleven","OK便利店","Circle K"]},
-  {type:"藥房連鎖", stores:["萬寧","屈臣氏","健康工房","莎莎","卓悅"]},
+  {type:"超級市場", stores:["百佳","惠康","AEON","一田","Market Place","City'super","Fusion","Great","Taste","UNY","APITA","大生","Sogo超市","驚安之殿堂"]},
+  {type:"便利店", stores:["7-Eleven","Circle K"]},
+  {type:"藥房連鎖", stores:["萬寧","屈臣氏","莎莎","卓悅","松本清","龍豐"]},
   {type:"網購", stores:["HKTVmall","百佳網購","惠康網購"]},
-  {type:"其他", stores:["街市","士多","麵包店","獨立藥房","其他地方"]},
+  {type:"其他", stores:["街市","士多","麵包店","獨立藥房","健康工房","韓印紅","iEAT","小伙兵團","其他地方"]},
 ];
 
 function freshness(date, cat) {
@@ -317,11 +317,24 @@ function HomeScreen({products,setSelectedProduct,setTab,selectedCat,setSelectedC
       </div>
     </div>
     <div style={{padding:"16px 16px",background:C.bg,minHeight:"100vh"}}>
-      {filtered.length===0?<div style={{textAlign:"center",padding:40,color:C.muted}}>
-        <div style={{fontSize:40,marginBottom:12}}>📦</div>
-        <div style={{marginBottom:16}}>未有記錄</div>
-        <button onClick={()=>setTab("add")} style={{background:C.teal,border:"none",borderRadius:12,padding:"10px 20px",color:"#fff",fontSize:14,cursor:"pointer"}}>＋ 加入第一個記錄</button>
-      </div>:filtered.map(p=><ProductCard key={p.id} product={p} onClick={()=>setSelectedProduct(p)} bookmarkIds={bookmarkIds} onToggleBookmark={onToggleBookmark}/>)}
+      {filtered.length===0 && selectedCat==="" ? <div style={{textAlign:"center",padding:"40px 24px",color:C.muted}}>
+        <div style={{fontSize:56,marginBottom:16}}>🏷️</div>
+        <div style={{fontSize:18,fontWeight:800,color:C.teal,marginBottom:8}}>價記係你的私人格價記憶庫</div>
+        <div style={{fontSize:14,color:C.muted,lineHeight:1.8,marginBottom:8}}>唔係價格比較網站！</div>
+        <div style={{background:C.white,borderRadius:16,padding:20,marginBottom:24,textAlign:"left"}}>
+          {[["👀","見到一樣嘢有特別價錢"],["📝","記低產品、店鋪同價格"],["🔍","下次再見，即刻知抵唔抵"]].map(([e,t])=><div key={t} style={{display:"flex",alignItems:"center",gap:12,marginBottom:12,fontSize:14,color:C.text}}>
+            <span style={{fontSize:22}}>{e}</span><span>{t}</span>
+          </div>)}
+        </div>
+        <button onClick={()=>setTab("add")} style={{background:C.teal,border:"none",borderRadius:14,padding:"14px 32px",color:"#fff",fontSize:16,fontWeight:700,cursor:"pointer",width:"100%"}}>➕ 記錄第一個價格</button>
+        <div style={{fontSize:12,color:C.muted,marginTop:16,lineHeight:1.6}}>你入的每個記錄都會幫到自己同其他用戶！</div>
+      </div>
+      : filtered.length===0 ? <div style={{textAlign:"center",padding:40,color:C.muted}}>
+        <div style={{fontSize:36,marginBottom:10}}>📦</div>
+        <div style={{marginBottom:16}}>呢個分類未有記錄</div>
+        <button onClick={()=>setTab("add")} style={{background:C.teal,border:"none",borderRadius:12,padding:"10px 20px",color:"#fff",fontSize:14,cursor:"pointer"}}>＋ 加入記錄</button>
+      </div>
+      : filtered.map(p=><ProductCard key={p.id} product={p} onClick={()=>setSelectedProduct(p)} bookmarkIds={bookmarkIds} onToggleBookmark={onToggleBookmark}/>)}
     </div>
   </div>;
 }
