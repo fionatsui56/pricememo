@@ -148,6 +148,9 @@ function SetDisplayNameScreen({user, onDone}){
       <button onClick={handleSave} disabled={saving||!name.trim()} style={{width:"100%",background:name.trim()?C.yellow:"rgba(255,255,255,0.2)",border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:name.trim()?C.teal:"rgba(255,255,255,0.4)",cursor:name.trim()?"pointer":"not-allowed"}}>
         {saving?"儲存中...":"確認，開始使用！"}
       </button>
+      <button onClick={async()=>{await supabase.auth.signOut();window.location.reload();}} style={{width:"100%",background:"transparent",border:"none",color:"rgba(255,255,255,0.4)",fontSize:13,cursor:"pointer",marginTop:12,padding:8}}>
+        返回登入頁面
+      </button>
     </div>
   </div>;
 }
@@ -293,6 +296,7 @@ function HomeScreen({products,setSelectedProduct,setTab,selectedCat,setSelectedC
         <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:4}}>
           <div style={{fontSize:24,fontWeight:900,color:"#fff",letterSpacing:-0.5}}>價記</div>
           <div style={{fontSize:14,fontWeight:600,color:C.yellow,letterSpacing:1}}>PriceMemo</div>
+          <div style={{width:6,height:6,borderRadius:3,background:C.coral,marginBottom:2}}/>
         </div>
         <div style={{fontSize:14,color:"rgba(255,255,255,0.7)"}}>記住邊度買過幾錢，下次先知抵唔抵</div>
       </div>
@@ -802,7 +806,10 @@ function App(){
   if(loading)return <div style={{minHeight:"100vh",background:C.teal,display:"flex",alignItems:"center",justifyContent:"center"}}>
     <div style={{textAlign:"center"}}>
       <img src="FullName.png" alt="價記" style={{width:120,height:120,objectFit:"contain",marginBottom:12}}/>
-      <div style={{fontSize:16,color:C.yellow}}>載入中...</div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+        <div style={{fontSize:16,color:C.yellow}}>載入中</div>
+        <div style={{width:6,height:6,borderRadius:3,background:C.coral}}/>
+      </div>
     </div>
   </div>;
 
