@@ -45,7 +45,7 @@ const CATEGORIES = [
   {id:"frozen",label:"急凍食品",emoji:"🧊"},
   {id:"fresh",label:"新鮮食品",emoji:"🥩"},
   {id:"bakery",label:"麵包/蛋糕",emoji:"🍞"},
-  {id:"pet",label:"寵物食品",emoji:"🐾"},
+  {id:"pet",label:"寵物",emoji:"🐾"},
   {id:"household",label:"家居用品",emoji:"🧻"},
   {id:"personal",label:"個人護理",emoji:"🧴"},
   {id:"medicine",label:"成藥",emoji:"💊"},
@@ -85,7 +85,7 @@ function ConsentScreen({onAgree}){
         <div style={{fontWeight:700,fontSize:15,color:C.yellow,marginBottom:12}}>關於價記 PriceMemo</div>
         <div style={{marginBottom:12}}>價記係一個<strong style={{color:"#fff"}}>公開共享</strong>的格價工具，所有用戶輸入的價格資料均對所有登入用戶可見。</div>
         <div style={{fontWeight:700,fontSize:14,color:C.yellow,marginBottom:8}}>我們會收集：</div>
-        <div style={{marginBottom:4}}>• 你的 Google 帳號名稱及電郵（用於顯示記錄者）</div>
+        <div style={{marginBottom:4}}>• 你的帳號名稱及電郵（用於顯示記錄者）</div>
         <div style={{marginBottom:12}}>• 你輸入的產品價格及地點資料</div>
         <div style={{fontWeight:700,fontSize:14,color:C.yellow,marginBottom:8}}>請注意：</div>
         <div style={{marginBottom:4}}>• 你輸入的所有資料會公開顯示</div>
@@ -107,15 +107,107 @@ function ConsentScreen({onAgree}){
   </div>;
 }
 
+// ── SET DISPLAY NAME ─────────────────────────────────────────────────────────
+function SetDisplayNameScreen({user, onDone}){
+  const suggested = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "";
+  const [name, setName] = useState(suggested);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSave = async () => {
+    if(!name.trim()){setError("請輸入顯示名稱");return;}
+    setSaving(true);
+    const {error} = await supabase.auth.updateUser({data:{display_name: name.trim()}});
+    if(error){setError("儲存失敗，請重試");setSaving(false);return;}
+    onDone(name.trim());
+  };
+
+  return <div style={{minHeight:"100vh",background:C.teal,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"48px 28px"}}>
+    <div style={{width:"100%",maxWidth:340}}>
+      <div style={{textAlign:"center",marginBottom:32}}>
+        <div style={{fontSize:40,marginBottom:12}}>👤</div>
+        <div style={{fontSize:20,fontWeight:800,color:"#fff",marginBottom:8}}>你想叫咩名？</div>
+        <div style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.6}}>其他用戶睇你的價格記錄時會見到呢個名。唔需要用真實姓名，花名英文名都得！</div>
+      </div>
+
+      <div style={{background:"rgba(255,255,255,0.1)",borderRadius:14,padding:"16px 20px",marginBottom:8}}>
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Pinky、阿明、匿名用戶" maxLength={20}
+          style={{width:"100%",background:"none",border:"none",outline:"none",fontSize:20,fontWeight:700,color:"#fff",textAlign:"center",boxSizing:"border-box"}}/>
+      </div>
+      <div style={{fontSize:12,color:"rgba(255,255,255,0.4)",textAlign:"center",marginBottom:24}}>最多20個字元</div>
+
+      <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+        <div style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginBottom:4}}>快速選擇：</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {["匿名用戶","神秘買家","格價達人", user?.email?.split("@")[0]||""].filter(Boolean).map(n=><button key={n} onClick={()=>setName(n)} style={{padding:"6px 14px",borderRadius:20,border:"1px solid rgba(255,255,255,0.2)",background:name===n?"rgba(255,255,255,0.2)":"transparent",color:"#fff",fontSize:13,cursor:"pointer"}}>{n}</button>)}
+        </div>
+      </div>
+
+      {error&&<div style={{color:C.coral,fontSize:13,marginBottom:12,textAlign:"center"}}>{error}</div>}
+
+      <button onClick={handleSave} disabled={saving||!name.trim()} style={{width:"100%",background:name.trim()?C.yellow:"rgba(255,255,255,0.2)",border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:name.trim()?C.teal:"rgba(255,255,255,0.4)",cursor:name.trim()?"pointer":"not-allowed"}}>
+        {saving?"儲存中...":"確認，開始使用！"}
+      </button>
+    </div>
+  </div>;
+}
+
 // ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
 function LoginScreen(){
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mode, setMode] = useState("main"); // main | email-login | email-register
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+
   const handleGoogleLogin = async () => {
     setLoading(true); setError("");
     const {error} = await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin}});
     if(error){setError(error.message);setLoading(false);}
   };
+
+  const handleEmailLogin = async () => {
+    setLoading(true); setError("");
+    const {error} = await supabase.auth.signInWithPassword({email, password});
+    if(error){setError("電郵或密碼錯誤，請重試");setLoading(false);}
+  };
+
+  const handleEmailRegister = async () => {
+    if(!displayName.trim()){setError("請輸入顯示名稱");return;}
+    setLoading(true); setError("");
+    const {error} = await supabase.auth.signUp({email, password, options:{data:{full_name:displayName}}});
+    if(error){setError(error.message);setLoading(false);}
+    else{setError("");alert("註冊成功！請查看電郵確認帳號，然後登入。");setMode("email-login");}
+    setLoading(false);
+  };
+
+  const inputStyle = {width:"100%",border:"none",borderBottom:"1px solid rgba(255,255,255,0.3)",outline:"none",fontSize:16,color:"#fff",background:"transparent",padding:"10px 0",boxSizing:"border-box",marginBottom:16};
+
+  if(mode==="email-login") return <div style={{minHeight:"100vh",background:C.teal,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"48px 28px"}}>
+    <div style={{width:"100%",maxWidth:340}}>
+      <button onClick={()=>setMode("main")} style={{background:"none",border:"none",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:14,marginBottom:24,padding:0}}>← 返回</button>
+      <div style={{fontSize:20,fontWeight:800,color:"#fff",marginBottom:28}}>電郵登入</div>
+      <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="電郵地址" type="email" style={inputStyle}/>
+      <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="密碼" type="password" style={inputStyle}/>
+      {error&&<div style={{color:C.coral,fontSize:13,marginBottom:12}}>{error}</div>}
+      <button onClick={handleEmailLogin} disabled={loading||!email||!password} style={{width:"100%",background:C.yellow,border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:"pointer",marginBottom:12,opacity:loading||!email||!password?0.6:1}}>{loading?"登入中...":"登入"}</button>
+      <button onClick={()=>setMode("email-register")} style={{width:"100%",background:"rgba(255,255,255,0.1)",border:"none",borderRadius:14,padding:14,fontSize:15,color:"#fff",cursor:"pointer"}}>未有帳號？立即註冊</button>
+    </div>
+  </div>;
+
+  if(mode==="email-register") return <div style={{minHeight:"100vh",background:C.teal,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"48px 28px"}}>
+    <div style={{width:"100%",maxWidth:340}}>
+      <button onClick={()=>setMode("email-login")} style={{background:"none",border:"none",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:14,marginBottom:24,padding:0}}>← 返回</button>
+      <div style={{fontSize:20,fontWeight:800,color:"#fff",marginBottom:28}}>建立帳號</div>
+      <input value={displayName} onChange={e=>setDisplayName(e.target.value)} placeholder="顯示名稱（其他用戶會見到）" style={inputStyle}/>
+      <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="電郵地址" type="email" style={inputStyle}/>
+      <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="密碼（最少6位）" type="password" style={inputStyle}/>
+      {error&&<div style={{color:C.coral,fontSize:13,marginBottom:12}}>{error}</div>}
+      <button onClick={handleEmailRegister} disabled={loading||!email||!password||!displayName} style={{width:"100%",background:C.yellow,border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:"pointer",opacity:loading||!email||!password||!displayName?0.6:1}}>{loading?"註冊中...":"建立帳號"}</button>
+    </div>
+  </div>;
+
   return <div style={{minHeight:"100vh",background:C.teal,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"48px 32px"}}>
     <div style={{textAlign:"center",width:"100%",maxWidth:340}}>
       <img src="FullName.png" alt="價記 PriceMemo" style={{width:150,height:150,objectFit:"contain",marginBottom:16}}/>
@@ -124,7 +216,7 @@ function LoginScreen(){
       <div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left",background:"rgba(255,255,255,0.08)",borderRadius:16,padding:"20px 24px",marginBottom:24}}>
         {["📍 記錄唔同地點見過的價格","🔍 即時比較歷史最低價","🎁 追蹤優惠同到期日","🛒 涵蓋超市、藥房、街市等"].map(t=><div key={t} style={{fontSize:15,color:"rgba(255,255,255,0.9)"}}>{t}</div>)}
       </div>
-      <button onClick={handleGoogleLogin} disabled={loading} style={{width:"100%",background:C.white,border:"none",borderRadius:16,padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"center",gap:12,cursor:loading?"not-allowed":"pointer",opacity:loading?0.7:1,boxShadow:"0 4px 20px rgba(0,0,0,0.15)"}}>
+      <button onClick={handleGoogleLogin} disabled={loading} style={{width:"100%",background:C.white,border:"none",borderRadius:16,padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"center",gap:12,cursor:loading?"not-allowed":"pointer",opacity:loading?0.7:1,boxShadow:"0 4px 20px rgba(0,0,0,0.15)",marginBottom:12}}>
         <svg width="20" height="20" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -133,6 +225,12 @@ function LoginScreen(){
         </svg>
         <span style={{fontSize:16,fontWeight:700,color:C.text}}>{loading?"登入中...":"用 Google 帳號登入"}</span>
       </button>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+        <div style={{flex:1,height:1,background:"rgba(255,255,255,0.2)"}}/>
+        <span style={{fontSize:13,color:"rgba(255,255,255,0.5)"}}>或者</span>
+        <div style={{flex:1,height:1,background:"rgba(255,255,255,0.2)"}}/>
+      </div>
+      <button onClick={()=>setMode("email-login")} style={{width:"100%",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:16,padding:"14px 24px",fontSize:15,fontWeight:600,color:"#fff",cursor:"pointer"}}>📧 用電郵登入 / 註冊</button>
       {error&&<div style={{marginTop:12,background:"rgba(233,112,85,0.15)",borderRadius:12,padding:12,textAlign:"center",color:C.coral,fontSize:14}}>{error}</div>}
     </div>
   </div>;
@@ -332,7 +430,7 @@ function ProductDetail({product:init,onBack,user,onUpdate,setTab,setAddProduct})
 }
 
 // ── ADD SCREEN ────────────────────────────────────────────────────────────────
-function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
+function AddScreen({user,displayName,onAdded,prefillProduct,clearPrefill}){
   const [step,setStep]=useState(prefillProduct?2:1);
   const [saving,setSaving]=useState(false);
   const [success,setSuccess]=useState(false);
@@ -364,7 +462,7 @@ function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
       }
       await supabase.from("price_records").insert({
         product_id:productId,user_id:user.id,
-        user_name:user.user_metadata?.full_name||user.email,
+        user_name:displayName||user.user_metadata?.display_name||user.user_metadata?.full_name||user.email,
         price:Number(f.price),district:f.district||null,
         shop:f.shopName||f.shopType,
         promo:f.promo?f.promoType:null,
@@ -532,7 +630,10 @@ function BookmarksScreen({products,setSelectedProduct,bookmarkIds,toggleBookmark
 }
 
 // ── PROFILE ───────────────────────────────────────────────────────────────────
-function ProfileScreen({user,onLogout}){
+function ProfileScreen({user,displayName,onNameChange,onLogout}){
+  const [changingName,setChangingName]=useState(false);
+  const [newName,setNewName]=useState(displayName);
+  const dispName=displayName||user?.user_metadata?.display_name||user?.user_metadata?.full_name||user?.email||"用戶";
   const [myRecords,setMyRecords]=useState([]);
   const [editingId,setEditingId]=useState(null);
   const [confirmDelete,setConfirmDelete]=useState(null);
@@ -559,7 +660,6 @@ function ProfileScreen({user,onLogout}){
     setEditingId(null);setLoading(false);
   };
 
-  const displayName=user?.user_metadata?.full_name||user?.email||"用戶";
   const avatar=user?.user_metadata?.avatar_url;
 
   return <div style={{background:C.bg,minHeight:"100vh"}}>
@@ -567,8 +667,9 @@ function ProfileScreen({user,onLogout}){
       <div style={{display:"flex",alignItems:"center",gap:16}}>
         {avatar?<img src={avatar} style={{width:64,height:64,borderRadius:32,objectFit:"cover"}} alt="avatar"/>:<div style={{width:64,height:64,borderRadius:32,background:C.yellow,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:800,color:C.teal}}>{displayName[0]}</div>}
         <div style={{flex:1}}>
-          <div style={{fontSize:20,fontWeight:800,color:"#fff"}}>{displayName}</div>
+          <div style={{fontSize:20,fontWeight:800,color:"#fff"}}>{dispName}</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,0.65)",marginTop:2}}>{user?.email}</div>
+          <button onClick={()=>setChangingName(true)} style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:8,padding:"3px 10px",color:"#fff",fontSize:11,cursor:"pointer",marginTop:4}}>✏️ 改顯示名稱</button>
         </div>
       </div>
       <div style={{display:"flex",gap:10,marginTop:20}}>
@@ -614,7 +715,20 @@ function ProfileScreen({user,onLogout}){
           </div>
         </div>;
       })}
-      <button onClick={handleLogout} style={{width:"100%",background:C.bg,border:`1px solid ${C.coral}`,borderRadius:14,padding:14,fontSize:15,color:C.coral,cursor:"pointer",marginTop:20}}>登出</button>
+      {changingName&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10,marginTop:10}}>
+        <div style={{fontSize:13,color:C.muted,marginBottom:8}}>新顯示名稱</div>
+        <input value={newName} onChange={e=>setNewName(e.target.value)} maxLength={20} style={{width:"100%",border:`1px solid ${C.teal}`,borderRadius:8,padding:"8px 10px",fontSize:16,outline:"none",boxSizing:"border-box",marginBottom:10}}/>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>setChangingName(false)} style={{flex:1,background:C.bg,border:"none",borderRadius:10,padding:10,cursor:"pointer"}}>取消</button>
+          <button onClick={async()=>{
+            await supabase.auth.updateUser({data:{display_name:newName}});
+            onNameChange(newName);
+            localStorage.setItem(`nameset_${user.id}`,"true");
+            setChangingName(false);
+          }} style={{flex:2,background:C.teal,border:"none",borderRadius:10,padding:10,cursor:"pointer",color:"#fff",fontWeight:700}}>儲存</button>
+        </div>
+      </div>}
+      <button onClick={handleLogout} style={{width:"100%",background:C.bg,border:`1px solid ${C.coral}`,borderRadius:14,padding:14,fontSize:15,color:C.coral,cursor:"pointer",marginTop:10}}>登出</button>
     </div>
   </div>;
 }
@@ -630,6 +744,8 @@ function App(){
   const [products,setProducts]=useState([]);
   const [addProduct,setAddProduct]=useState(null);
   const [bookmarkIds,setBookmarkIds]=useState([]);
+  const [displayName,setDisplayName]=useState("");
+  const [nameSet,setNameSet]=useState(false);
 
   const loadBookmarks=async(uid)=>{
     const {data}=await supabase.from("bookmarks").select("product_id").eq("user_id",uid);
@@ -660,6 +776,9 @@ function App(){
     if(user){
       const stored=localStorage.getItem(`consented_${user.id}`);
       if(stored)setConsented(true);
+      const dn=user?.user_metadata?.display_name||user?.user_metadata?.full_name||"";
+      const nameStored=localStorage.getItem(`nameset_${user.id}`);
+      if(dn&&nameStored){setDisplayName(dn);setNameSet(true);}
     }
   },[user]);
 
@@ -689,6 +808,7 @@ function App(){
 
   if(!user)return <LoginScreen/>;
   if(!consented)return <ConsentScreen onAgree={handleConsent}/>;
+  if(!nameSet)return <SetDisplayNameScreen user={user} onDone={(n)=>{setDisplayName(n);setNameSet(true);localStorage.setItem(`nameset_${user.id}`,"true");}}/>;
 
   if(sel)return <div style={{maxWidth:430,margin:"0 auto",fontFamily:"'PingFang HK','Noto Sans HK',system-ui,sans-serif",minHeight:"100vh"}}>
     <ProductDetail product={sel} onBack={()=>setSel(null)} user={user} onUpdate={updated=>setProducts(products.map(p=>p.id===updated.id?updated:p))} setTab={setTab} setAddProduct={setAddProduct}/>
@@ -697,9 +817,9 @@ function App(){
   return <div style={{maxWidth:430,margin:"0 auto",fontFamily:"'PingFang HK','Noto Sans HK',system-ui,sans-serif",background:C.bg,minHeight:"100vh",paddingBottom:80}}>
     {tab==="home"&&<HomeScreen products={products} setSelectedProduct={setSel} setTab={setTab} selectedCat={selCat} setSelectedCat={setSelCat} bookmarkIds={bookmarkIds} onToggleBookmark={toggleBookmark}/>}
     {tab==="search"&&<SearchScreen products={products} setSelectedProduct={setSel} bookmarkIds={bookmarkIds} onToggleBookmark={toggleBookmark}/>}
-    {tab==="add"&&<AddScreen user={user} onAdded={()=>{loadProducts();setTab("home");}} prefillProduct={addProduct} clearPrefill={()=>setAddProduct(null)}/>}
+    {tab==="add"&&<AddScreen user={user} displayName={displayName} onAdded={()=>{loadProducts();setTab("home");}} prefillProduct={addProduct} clearPrefill={()=>setAddProduct(null)}/>}
     {tab==="bookmarks"&&<BookmarksScreen products={products} setSelectedProduct={setSel} bookmarkIds={bookmarkIds} toggleBookmark={toggleBookmark}/>}
-    {tab==="profile"&&<ProfileScreen user={user} onLogout={()=>{setUser(null);setConsented(false);}}/>}
+    {tab==="profile"&&<ProfileScreen user={user} displayName={displayName} onNameChange={(n)=>{setDisplayName(n);}} onLogout={()=>{setUser(null);setConsented(false);setNameSet(false);setDisplayName("");}}/>}
     <BottomNav tab={tab} setTab={setTab}/>
   </div>;
 }
