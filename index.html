@@ -83,18 +83,18 @@ function ConsentScreen({onAgree}){
     <div style={{background:"rgba(255,255,255,0.1)",borderRadius:16,padding:20,marginBottom:24,flex:1}}>
       <div style={{fontSize:14,color:"rgba(255,255,255,0.9)",lineHeight:1.8}}>
         <div style={{fontWeight:700,fontSize:15,color:C.yellow,marginBottom:12}}>關於價記 PriceMemo</div>
-        <div style={{marginBottom:12}}>價記係一個<strong style={{color:"#fff"}}>公開共享</strong>的格價工具，所有用戶輸入的價格資料均對所有登入用戶可見。</div>
+        <div style={{marginBottom:12}}>價記係你的<strong style={{color:"#fff"}}>私人格價記憶庫</strong>，你的記錄只有自己可以睇到。</div>
         <div style={{fontWeight:700,fontSize:14,color:C.yellow,marginBottom:8}}>我們會收集：</div>
-        <div style={{marginBottom:4}}>• 你的帳號名稱及電郵（用於顯示記錄者）</div>
+        <div style={{marginBottom:4}}>• 你的帳號資料（顯示名稱及電郵）</div>
         <div style={{marginBottom:12}}>• 你輸入的產品價格及地點資料</div>
         <div style={{fontWeight:700,fontSize:14,color:C.yellow,marginBottom:8}}>請注意：</div>
-        <div style={{marginBottom:4}}>• 你輸入的所有資料會公開顯示</div>
+        <div style={{marginBottom:4}}>• 你的記錄只有自己可見 🔒</div>
         <div style={{marginBottom:4}}>• 系統現為測試階段</div>
         <div>• 如有問題歡迎提供意見</div>
       </div>
     </div>
     <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:24}}>
-      {[[ticked1,setTicked1,"我同意價記收集我的 Google 帳號資料用於識別記錄者"],[ticked2,setTicked2,"我明白我輸入的價格資料會公開給所有登入用戶查閱，並同意參與共享價格資料庫"]].map(([val,setter,label],i)=><div key={i} onClick={()=>setter(!val)} style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer",background:"rgba(255,255,255,0.1)",borderRadius:12,padding:14}}>
+      {[[ticked1,setTicked1,"我同意價記收集我的 Google 帳號資料用於識別記錄者"],[ticked2,setTicked2,"我明白價記係個人格價記錄工具，我的記錄只有自己可以睇到"]].map(([val,setter,label],i)=><div key={i} onClick={()=>setter(!val)} style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer",background:"rgba(255,255,255,0.1)",borderRadius:12,padding:14}}>
         <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${val?C.yellow:"rgba(255,255,255,0.4)"}`,background:val?C.yellow:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}}>
           {val&&<span style={{color:C.teal,fontSize:14,fontWeight:900}}>✓</span>}
         </div>
@@ -222,7 +222,7 @@ function LoginScreen(){
       <div style={{fontSize:22,fontWeight:800,color:"#fff",marginBottom:6}}>記住邊度買過幾錢</div>
       <div style={{fontSize:22,fontWeight:800,color:C.yellow,marginBottom:24}}>下次先知抵唔抵</div>
       <div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left",background:"rgba(255,255,255,0.08)",borderRadius:16,padding:"20px 24px",marginBottom:24}}>
-        {["📍 記錄唔同地點見過的價格","🔍 即時比較歷史最低價","🎁 追蹤優惠同到期日","🛒 涵蓋超市、藥房、街市等"].map(t=><div key={t} style={{fontSize:15,color:"rgba(255,255,255,0.9)"}}>{t}</div>)}
+        {["📍 記錄唔同地點見過的價格","🔍 翻查自己見過的最低價","🎁 追蹤優惠同到期日","🛒 涵蓋超市、藥房、街市等"].map(t=><div key={t} style={{fontSize:15,color:"rgba(255,255,255,0.9)"}}>{t}</div>)}
       </div>
       <button onClick={handleGoogleLogin} disabled={loading} style={{width:"100%",background:C.white,border:"none",borderRadius:16,padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"center",gap:12,cursor:loading?"not-allowed":"pointer",opacity:loading?0.7:1,boxShadow:"0 4px 20px rgba(0,0,0,0.15)",marginBottom:12}}>
         <svg width="20" height="20" viewBox="0 0 24 24">
@@ -320,15 +320,15 @@ function HomeScreen({products,setSelectedProduct,setTab,selectedCat,setSelectedC
     <div style={{padding:"16px 16px",background:C.bg,minHeight:"100vh"}}>
       {filtered.length===0 && selectedCat==="" ? <div style={{textAlign:"center",padding:"40px 24px",color:C.muted}}>
         <div style={{fontSize:56,marginBottom:16}}>🏷️</div>
-        <div style={{fontSize:18,fontWeight:800,color:C.teal,marginBottom:8}}>價記係你的私人格價記憶庫</div>
-        <div style={{fontSize:14,color:C.muted,lineHeight:1.8,marginBottom:8}}>唔係價格比較網站！</div>
+        <div style={{fontSize:18,fontWeight:800,color:C.teal,marginBottom:8}}>你的私人格價記憶庫</div>
+        <div style={{fontSize:14,color:C.muted,lineHeight:1.8,marginBottom:8}}>記低自己見過的價錢，下次唔使靠估！</div>
         <div style={{background:C.white,borderRadius:16,padding:20,marginBottom:24,textAlign:"left"}}>
           {[["👀","見到一樣嘢有特別價錢"],["📝","記低產品、店鋪同價格"],["🔍","下次再見，即刻知抵唔抵"]].map(([e,t])=><div key={t} style={{display:"flex",alignItems:"center",gap:12,marginBottom:12,fontSize:14,color:C.text}}>
             <span style={{fontSize:22}}>{e}</span><span>{t}</span>
           </div>)}
         </div>
         <button onClick={()=>setTab("add")} style={{background:C.teal,border:"none",borderRadius:14,padding:"14px 32px",color:"#fff",fontSize:16,fontWeight:700,cursor:"pointer",width:"100%"}}>➕ 記錄第一個價格</button>
-        <div style={{fontSize:12,color:C.muted,marginTop:16,lineHeight:1.6}}>你入的每個記錄都會幫到自己同其他用戶！</div>
+        <div style={{fontSize:12,color:C.muted,marginTop:16,lineHeight:1.6}}>你的記錄只有自己可以睇到 🔒</div>
       </div>
       : filtered.length===0 ? <div style={{textAlign:"center",padding:40,color:C.muted}}>
         <div style={{fontSize:36,marginBottom:10}}>📦</div>
@@ -429,7 +429,7 @@ function ProductDetail({product:init,onBack,user,onUpdate,setTab,setAddProduct})
                 {isBest&&<span style={{fontSize:11,background:C.teal,color:"#fff",borderRadius:6,padding:"1px 7px"}}>最平</span>}
               </div>
               {p.district&&<div style={{fontSize:12,color:C.muted,marginBottom:2}}>📍 {p.district}</div>}
-              <div style={{fontSize:12,color:C.muted,marginBottom:3}}>👤 {p.user_name}</div>
+
               <div style={{fontSize:12,color:f.color}}>{f.dot} {f.label}</div>
               {promoActive&&<div style={{fontSize:12,color:C.coral,marginTop:3,fontWeight:600}}>🎁 {p.promo} · 至 {new Date(p.promo_expiry).toLocaleDateString("zh-HK")}</div>}
               {promoExpired&&<div style={{fontSize:12,color:C.muted,marginTop:3}}>⏰ {p.promo}（已過期）</div>}
@@ -437,10 +437,10 @@ function ProductDetail({product:init,onBack,user,onUpdate,setTab,setAddProduct})
             <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
               <div style={{fontSize:24,fontWeight:800,color:isBest?C.teal:C.text}}>${p.price}</div>
               <div style={{display:"flex",gap:6}}>
-                {isMe?<>
+                <div style={{display:"flex",gap:6}}>
                   <button onClick={()=>setEditingPrice(p.id)} style={{background:C.tealLight,border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.teal}}>✏️</button>
                   <button onClick={()=>setConfirmDelete(p.id)} style={{background:"#FFF0EE",border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.coral}}>🗑️</button>
-                </>:<button onClick={()=>alert("已收到檢舉，感謝！")} style={{background:C.bg,border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.muted}}>🚩</button>}
+                </div>
               </div>
             </div>
           </div>
@@ -810,17 +810,26 @@ function App(){
     setConsented(true);
   };
 
-  const loadProducts=async()=>{
-    const {data}=await supabase.from("products").select("*, price_records(*)").order("created_at",{ascending:false});
-    if(data)setProducts(data);
+  const loadProducts=async(uid)=>{
+    if(!uid)return;
+    // Load only products that have this user's price records
+    const {data:myRecords}=await supabase.from("price_records").select("product_id").eq("user_id",uid);
+    if(!myRecords||myRecords.length===0){setProducts([]);return;}
+    const productIds=[...new Set(myRecords.map(r=>r.product_id))];
+    const {data}=await supabase.from("products").select("*, price_records(*)").in("id",productIds).order("created_at",{ascending:false});
+    if(data){
+      // Filter price_records to only show user's own
+      const filtered=data.map(p=>({...p,price_records:(p.price_records||[]).filter(r=>r.user_id===uid)}));
+      setProducts(filtered);
+    }
   };
 
   useEffect(()=>{
-    if(user&&consented){
-      loadProducts();
+    if(user&&consented&&nameSet){
+      loadProducts(user.id);
       loadBookmarks(user.id);
     }
-  },[user,consented]);
+  },[user,consented,nameSet]);
 
   if(loading)return <div style={{minHeight:"100vh",background:C.teal,display:"flex",alignItems:"center",justifyContent:"center"}}>
     <div style={{textAlign:"center"}}>
@@ -843,7 +852,7 @@ function App(){
   return <div style={{maxWidth:430,margin:"0 auto",fontFamily:"'PingFang HK','Noto Sans HK',system-ui,sans-serif",background:C.bg,minHeight:"100vh",paddingBottom:80}}>
     {tab==="home"&&<HomeScreen products={products} setSelectedProduct={setSel} setTab={setTab} selectedCat={selCat} setSelectedCat={setSelCat} bookmarkIds={bookmarkIds} onToggleBookmark={toggleBookmark}/>}
     {tab==="search"&&<SearchScreen products={products} setSelectedProduct={setSel} bookmarkIds={bookmarkIds} onToggleBookmark={toggleBookmark}/>}
-    {tab==="add"&&<AddScreen user={user} displayName={displayName} onAdded={()=>{loadProducts();setTab("home");}} prefillProduct={addProduct} clearPrefill={()=>setAddProduct(null)}/>}
+    {tab==="add"&&<AddScreen user={user} displayName={displayName} onAdded={()=>{loadProducts(user.id);setTab("home");}} prefillProduct={addProduct} clearPrefill={()=>setAddProduct(null)}/>}
     {tab==="bookmarks"&&<BookmarksScreen products={products} setSelectedProduct={setSel} bookmarkIds={bookmarkIds} toggleBookmark={toggleBookmark}/>}
     {tab==="profile"&&<ProfileScreen user={user} displayName={displayName} onNameChange={(n)=>{setDisplayName(n);}} onLogout={()=>{setUser(null);setConsented(false);setNameSet(false);setDisplayName("");}}/>}
     <BottomNav tab={tab} setTab={setTab}/>
