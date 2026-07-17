@@ -94,7 +94,7 @@ function ConsentScreen({onAgree}){
       </div>
     </div>
     <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:24}}>
-      {[[ticked1,setTicked1,"我同意價記收集我的 Google 帳號資料用於識別記錄者"],[ticked2,setTicked2,"我明白價記係個人格價記錄工具，我的記錄只有自己可以睇到"]].map(([val,setter,label],i)=><div key={i} onClick={()=>setter(!val)} style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer",background:"rgba(255,255,255,0.1)",borderRadius:12,padding:14}}>
+      {[[ticked1,setTicked1,"我同意價記儲存我的帳號資料（顯示名稱及電郵）以識別我的格價記錄"],[ticked2,setTicked2,"我明白價記係個人格價記錄工具，我的記錄只有自己可以睇到"]].map(([val,setter,label],i)=><div key={i} onClick={()=>setter(!val)} style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer",background:"rgba(255,255,255,0.1)",borderRadius:12,padding:14}}>
         <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${val?C.yellow:"rgba(255,255,255,0.4)"}`,background:val?C.yellow:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}}>
           {val&&<span style={{color:C.teal,fontSize:14,fontWeight:900}}>✓</span>}
         </div>
