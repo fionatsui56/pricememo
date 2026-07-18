@@ -107,54 +107,6 @@ function ConsentScreen({onAgree}){
   </div>;
 }
 
-// ── SET DISPLAY NAME ─────────────────────────────────────────────────────────
-function SetDisplayNameScreen({user, onDone}){
-  const suggested = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "";
-  const [name, setName] = useState(suggested);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSave = async () => {
-    if(!name.trim()){setError("請輸入顯示名稱");return;}
-    setSaving(true);
-    const {error} = await supabase.auth.updateUser({data:{display_name: name.trim()}});
-    if(error){setError("儲存失敗，請重試");setSaving(false);return;}
-    onDone(name.trim());
-  };
-
-  return <div style={{minHeight:"100vh",background:C.teal,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"48px 28px"}}>
-    <div style={{width:"100%",maxWidth:340}}>
-      <div style={{textAlign:"center",marginBottom:32}}>
-        <div style={{fontSize:40,marginBottom:12}}>👤</div>
-        <div style={{fontSize:20,fontWeight:800,color:"#fff",marginBottom:8}}>你想叫咩名？</div>
-        <div style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.6}}>其他用戶睇你的價格記錄時會見到呢個名。唔需要用真實姓名，花名英文名都得！</div>
-      </div>
-
-      <div style={{background:"rgba(255,255,255,0.1)",borderRadius:14,padding:"16px 20px",marginBottom:8}}>
-        <input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Pinky、阿明、匿名用戶" maxLength={20}
-          style={{width:"100%",background:"none",border:"none",outline:"none",fontSize:20,fontWeight:700,color:"#fff",textAlign:"center",boxSizing:"border-box"}}/>
-      </div>
-      <div style={{fontSize:12,color:"rgba(255,255,255,0.4)",textAlign:"center",marginBottom:24}}>最多20個字元</div>
-
-      <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-        <div style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginBottom:4}}>快速選擇：</div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {["匿名用戶","神秘買家","格價達人", user?.email?.split("@")[0]||""].filter(Boolean).map(n=><button key={n} onClick={()=>setName(n)} style={{padding:"6px 14px",borderRadius:20,border:"1px solid rgba(255,255,255,0.2)",background:name===n?"rgba(255,255,255,0.2)":"transparent",color:"#fff",fontSize:13,cursor:"pointer"}}>{n}</button>)}
-        </div>
-      </div>
-
-      {error&&<div style={{color:C.coral,fontSize:13,marginBottom:12,textAlign:"center"}}>{error}</div>}
-
-      <button onClick={handleSave} disabled={saving||!name.trim()} style={{width:"100%",background:name.trim()?C.yellow:"rgba(255,255,255,0.2)",border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:name.trim()?C.teal:"rgba(255,255,255,0.4)",cursor:name.trim()?"pointer":"not-allowed"}}>
-        {saving?"儲存中...":"確認，開始使用！"}
-      </button>
-      <button onClick={async()=>{await supabase.auth.signOut();window.location.reload();}} style={{width:"100%",background:"transparent",border:"none",color:"rgba(255,255,255,0.4)",fontSize:13,cursor:"pointer",marginTop:12,padding:8}}>
-        返回登入頁面
-      </button>
-    </div>
-  </div>;
-}
-
 // ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
 function LoginScreen(){
   const [loading, setLoading] = useState(false);
@@ -453,7 +405,7 @@ function ProductDetail({product:init,onBack,user,onUpdate,setTab,setAddProduct})
 }
 
 // ── ADD SCREEN ────────────────────────────────────────────────────────────────
-function AddScreen({user,displayName,onAdded,prefillProduct,clearPrefill}){
+function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
   const [step,setStep]=useState(prefillProduct?2:1);
   const [saving,setSaving]=useState(false);
   const [success,setSuccess]=useState(false);
@@ -485,7 +437,7 @@ function AddScreen({user,displayName,onAdded,prefillProduct,clearPrefill}){
       }
       await supabase.from("price_records").insert({
         product_id:productId,user_id:user.id,
-        user_name:displayName||user.user_metadata?.display_name||user.user_metadata?.full_name||user.email,
+        user_name:user.user_metadata?.full_name||user.user_metadata?.display_name||user.email,
         price:Number(f.price),district:f.district||null,
         shop:f.shopName||f.shopType,
         promo:f.promo?f.promoType:null,
@@ -653,10 +605,10 @@ function BookmarksScreen({products,setSelectedProduct,bookmarkIds,toggleBookmark
 }
 
 // ── PROFILE ───────────────────────────────────────────────────────────────────
-function ProfileScreen({user,displayName,onNameChange,onLogout}){
+function ProfileScreen({user,onLogout}){
   const [changingName,setChangingName]=useState(false);
-  const [newName,setNewName]=useState(displayName);
-  const dispName=displayName||user?.user_metadata?.display_name||user?.user_metadata?.full_name||user?.email||"用戶";
+  const dispName=user?.user_metadata?.full_name||user?.user_metadata?.display_name||user?.email||"用戶";
+  const [newName,setNewName]=useState(dispName);
   const [myRecords,setMyRecords]=useState([]);
   const [editingId,setEditingId]=useState(null);
   const [confirmDelete,setConfirmDelete]=useState(null);
@@ -745,9 +697,8 @@ function ProfileScreen({user,displayName,onNameChange,onLogout}){
           <button onClick={()=>setChangingName(false)} style={{flex:1,background:C.bg,border:"none",borderRadius:10,padding:10,cursor:"pointer"}}>取消</button>
           <button onClick={async()=>{
             await supabase.auth.updateUser({data:{display_name:newName}});
-            onNameChange(newName);
-            localStorage.setItem(`nameset_${user.id}`,"true");
             setChangingName(false);
+            window.location.reload();
           }} style={{flex:2,background:C.teal,border:"none",borderRadius:10,padding:10,cursor:"pointer",color:"#fff",fontWeight:700}}>儲存</button>
         </div>
       </div>}
@@ -767,8 +718,7 @@ function App(){
   const [products,setProducts]=useState([]);
   const [addProduct,setAddProduct]=useState(null);
   const [bookmarkIds,setBookmarkIds]=useState([]);
-  const [displayName,setDisplayName]=useState("");
-  const [nameSet,setNameSet]=useState(false);
+
 
   const loadBookmarks=async(uid)=>{
     const {data}=await supabase.from("bookmarks").select("product_id").eq("user_id",uid);
@@ -799,9 +749,6 @@ function App(){
     if(user){
       const stored=localStorage.getItem(`consented_${user.id}`);
       if(stored)setConsented(true);
-      const dn=user?.user_metadata?.display_name||user?.user_metadata?.full_name||"";
-      const nameStored=localStorage.getItem(`nameset_${user.id}`);
-      if(dn&&nameStored){setDisplayName(dn);setNameSet(true);}
     }
   },[user]);
 
@@ -825,11 +772,11 @@ function App(){
   };
 
   useEffect(()=>{
-    if(user&&consented&&nameSet){
+    if(user&&consented){
       loadProducts(user.id);
       loadBookmarks(user.id);
     }
-  },[user,consented,nameSet]);
+  },[user,consented]);
 
   if(loading)return <div style={{minHeight:"100vh",background:C.teal,display:"flex",alignItems:"center",justifyContent:"center"}}>
     <div style={{textAlign:"center"}}>
@@ -843,7 +790,7 @@ function App(){
 
   if(!user)return <LoginScreen/>;
   if(!consented)return <ConsentScreen onAgree={handleConsent}/>;
-  if(!nameSet)return <SetDisplayNameScreen user={user} onDone={(n)=>{setDisplayName(n);setNameSet(true);localStorage.setItem(`nameset_${user.id}`,"true");}}/>;
+
 
   if(sel)return <div style={{maxWidth:430,margin:"0 auto",fontFamily:"'PingFang HK','Noto Sans HK',system-ui,sans-serif",minHeight:"100vh"}}>
     <ProductDetail product={sel} onBack={()=>setSel(null)} user={user} onUpdate={updated=>setProducts(products.map(p=>p.id===updated.id?updated:p))} setTab={setTab} setAddProduct={setAddProduct}/>
@@ -852,9 +799,9 @@ function App(){
   return <div style={{maxWidth:430,margin:"0 auto",fontFamily:"'PingFang HK','Noto Sans HK',system-ui,sans-serif",background:C.bg,minHeight:"100vh",paddingBottom:80}}>
     {tab==="home"&&<HomeScreen products={products} setSelectedProduct={setSel} setTab={setTab} selectedCat={selCat} setSelectedCat={setSelCat} bookmarkIds={bookmarkIds} onToggleBookmark={toggleBookmark}/>}
     {tab==="search"&&<SearchScreen products={products} setSelectedProduct={setSel} bookmarkIds={bookmarkIds} onToggleBookmark={toggleBookmark}/>}
-    {tab==="add"&&<AddScreen user={user} displayName={displayName} onAdded={()=>{loadProducts(user.id);setTab("home");}} prefillProduct={addProduct} clearPrefill={()=>setAddProduct(null)}/>}
+    {tab==="add"&&<AddScreen user={user} onAdded={()=>{loadProducts(user.id);setTab("home");}} prefillProduct={addProduct} clearPrefill={()=>setAddProduct(null)}/>}
     {tab==="bookmarks"&&<BookmarksScreen products={products} setSelectedProduct={setSel} bookmarkIds={bookmarkIds} toggleBookmark={toggleBookmark}/>}
-    {tab==="profile"&&<ProfileScreen user={user} displayName={displayName} onNameChange={(n)=>{setDisplayName(n);}} onLogout={()=>{setUser(null);setConsented(false);setNameSet(false);setDisplayName("");}}/>}
+    {tab==="profile"&&<ProfileScreen user={user} onLogout={()=>{setUser(null);setConsented(false);}}/>}
     <BottomNav tab={tab} setTab={setTab}/>
   </div>;
 }
