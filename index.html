@@ -431,11 +431,16 @@ function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
     try{
       let productId=f.productId;
       if(!productId){
-        const {data:existing}=await supabase.from("products").select("id").eq("name",f.name).eq("brand",f.brand||"").maybeSingle();
+        const {data:existing, error:findErr}=await supabase.from("products").select("id").eq("name",f.name).eq("brand",f.brand||"").maybeSingle();
+        if(findErr) throw new Error("搵產品失敗: "+findErr.message);
         if(existing){productId=existing.id;}
-        else{const {data:np}=await supabase.from("products").insert({name:f.name,brand:f.brand||null,category:f.category}).select().single();productId=np.id;}
+        else{
+          const {data:np, error:insertErr}=await supabase.from("products").insert({name:f.name,brand:f.brand||null,category:f.category}).select().single();
+          if(insertErr) throw new Error("新增產品失敗: "+insertErr.message);
+          productId=np.id;
+        }
       }
-      await supabase.from("price_records").insert({
+      const {error:priceErr}=await supabase.from("price_records").insert({
         product_id:productId,user_id:user.id,
         user_name:user.user_metadata?.full_name||user.user_metadata?.display_name||user.email,
         price:Number(f.price),district:f.district||null,
@@ -443,11 +448,12 @@ function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
         promo:f.promo?f.promoType:null,
         promo_expiry:f.promo&&f.promoExpiry?f.promoExpiry:null,
       });
+      if(priceErr) throw new Error("新增價格失敗: "+priceErr.message);
       setSuccess(true);
       clearPrefill();
       onAdded();
       setTimeout(()=>{setSuccess(false);setStep(1);setF({name:"",brand:"",category:"",productId:null,shopType:"",shopName:"",district:"",price:"",promo:false,promoType:"",promoExpiry:""});},1500);
-    }catch(e){alert("儲存失敗，請重試");}
+    }catch(e){alert("錯誤："+e.message);}
     setSaving(false);
   };
 
