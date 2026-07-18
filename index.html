@@ -612,103 +612,49 @@ function BookmarksScreen({products,setSelectedProduct,bookmarkIds,toggleBookmark
 
 // ── PROFILE ───────────────────────────────────────────────────────────────────
 function ProfileScreen({user,onLogout}){
+  const [recordCount,setRecordCount]=useState(0);
+  const [productCount,setProductCount]=useState(0);
   const [changingName,setChangingName]=useState(false);
   const dispName=user?.user_metadata?.full_name||user?.user_metadata?.display_name||user?.email||"用戶";
   const [newName,setNewName]=useState(dispName);
-  const [myRecords,setMyRecords]=useState([]);
-  const [editingId,setEditingId]=useState(null);
-  const [confirmDelete,setConfirmDelete]=useState(null);
-  const [loading,setLoading]=useState(false);
+  const avatar=user?.user_metadata?.avatar_url;
 
   useEffect(()=>{
     if(!user)return;
-    supabase.from("price_records").select("*, products(name,brand,category)").eq("user_id",user.id).order("recorded_at",{ascending:false}).then(({data})=>{if(data)setMyRecords(data);});
+    supabase.from("price_records").select("product_id").eq("user_id",user.id).then(({data})=>{
+      if(data){setRecordCount(data.length);setProductCount(new Set(data.map(r=>r.product_id)).size);}
+    });
   },[user]);
 
   const handleLogout=async()=>{await supabase.auth.signOut();onLogout();};
 
-  const deleteRecord=async(id)=>{
-    setLoading(true);
-    await supabase.from("price_records").delete().eq("id",id);
-    setMyRecords(myRecords.filter(r=>r.id!==id));
-    setConfirmDelete(null);setLoading(false);
-  };
-
-  const saveRecord=async(id,data)=>{
-    setLoading(true);
-    const {data:updated}=await supabase.from("price_records").update({price:data.price,shop:data.shop,district:data.district,promo:data.promo,promo_expiry:data.promoExpiry||null}).eq("id",id).select().single();
-    if(updated)setMyRecords(myRecords.map(r=>r.id===id?{...r,...updated}:r));
-    setEditingId(null);setLoading(false);
-  };
-
-  const avatar=user?.user_metadata?.avatar_url;
-
   return <div style={{background:C.bg,minHeight:"100vh"}}>
     <div style={{background:C.teal,padding:"52px 20px 28px"}}>
       <div style={{display:"flex",alignItems:"center",gap:16}}>
-        {avatar?<img src={avatar} style={{width:64,height:64,borderRadius:32,objectFit:"cover"}} alt="avatar"/>:<div style={{width:64,height:64,borderRadius:32,background:C.yellow,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:800,color:C.teal}}>{displayName[0]}</div>}
+        {avatar?<img src={avatar} style={{width:64,height:64,borderRadius:32,objectFit:"cover"}} alt="avatar"/>:<div style={{width:64,height:64,borderRadius:32,background:C.yellow,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:800,color:C.teal}}>{dispName[0]}</div>}
         <div style={{flex:1}}>
           <div style={{fontSize:20,fontWeight:800,color:"#fff"}}>{dispName}</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,0.65)",marginTop:2}}>{user?.email}</div>
-          <button onClick={()=>setChangingName(true)} style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:8,padding:"3px 10px",color:"#fff",fontSize:11,cursor:"pointer",marginTop:4}}>✏️ 改顯示名稱</button>
+          <button onClick={()=>setChangingName(!changingName)} style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:8,padding:"3px 10px",color:"#fff",fontSize:11,cursor:"pointer",marginTop:4}}>✏️ 改顯示名稱</button>
         </div>
       </div>
       <div style={{display:"flex",gap:10,marginTop:20}}>
-        {[{l:"我的記錄",v:myRecords.length},{l:"已記產品",v:new Set(myRecords.map(r=>r.product_id)).size}].map(s=><div key={s.l} style={{flex:1,background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
+        {[{l:"價格記錄",v:recordCount},{l:"已記產品",v:productCount}].map(s=><div key={s.l} style={{flex:1,background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
           <div style={{fontSize:20,fontWeight:800,color:"#fff"}}>{s.v}</div>
           <div style={{fontSize:11,color:"rgba(255,255,255,0.65)"}}>{s.l}</div>
         </div>)}
       </div>
     </div>
     <div style={{padding:16}}>
-      <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:10}}>我的記錄</div>
-      {myRecords.length===0?<div style={{textAlign:"center",padding:30,color:C.muted}}>未有記錄</div>:myRecords.map((r,i)=>{
-        const f=freshness(r.recorded_at,r.products?.category);
-        const cat=CATEGORIES.find(c=>c.id===r.products?.category);
-        if(editingId===r.id)return <EditForm key={r.id} price={{...r,district:r.district||""}} onSave={d=>saveRecord(r.id,d)} onCancel={()=>setEditingId(null)}/>;
-        if(confirmDelete===r.id)return <div key={r.id} style={{background:"#FFF0EE",borderRadius:14,padding:16,marginBottom:10,border:`2px solid ${C.coral}`}}>
-          <div style={{fontWeight:700,color:C.text,marginBottom:4}}>確定刪除？</div>
-          <div style={{fontSize:14,color:C.muted,marginBottom:14}}>{r.shop} · ${r.price}</div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={()=>setConfirmDelete(null)} style={{flex:1,background:C.bg,border:"none",borderRadius:10,padding:10,cursor:"pointer"}}>取消</button>
-            <button onClick={()=>deleteRecord(r.id)} disabled={loading} style={{flex:1,background:C.coral,border:"none",borderRadius:10,padding:10,cursor:"pointer",color:"#fff",fontWeight:700}}>刪除</button>
-          </div>
-        </div>;
-        return <div key={i} style={{background:C.white,borderRadius:14,padding:14,marginBottom:10,border:"1px solid #EAE8E3"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-            <div style={{flex:1}}>
-              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                <span style={{fontSize:12}}>{cat?.emoji}</span>
-                {r.products?.brand&&<span style={{fontSize:12,background:C.tealLight,color:C.teal,borderRadius:6,padding:"1px 7px",fontWeight:600}}>{r.products.brand}</span>}
-              </div>
-              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>{r.products?.name}</div>
-              <div style={{fontSize:12,color:C.muted,marginBottom:2}}>🏪 {r.shop}{r.district?` · 📍${r.district}`:""}</div>
-              <div style={{fontSize:12,color:f.color}}>{f.dot} {f.label}</div>
-              {r.promo&&r.promo_expiry&&new Date(r.promo_expiry)>new Date()&&<div style={{fontSize:12,color:C.coral,marginTop:2,fontWeight:600}}>🎁 {r.promo}</div>}
-            </div>
-            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
-              <div style={{fontSize:22,fontWeight:800,color:C.teal}}>${r.price}</div>
-              <div style={{display:"flex",gap:6}}>
-                <button onClick={()=>setEditingId(r.id)} style={{background:C.tealLight,border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.teal}}>✏️</button>
-                <button onClick={()=>setConfirmDelete(r.id)} style={{background:"#FFF0EE",border:"none",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:12,color:C.coral}}>🗑️</button>
-              </div>
-            </div>
-          </div>
-        </div>;
-      })}
-      {changingName&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10,marginTop:10}}>
+      {changingName&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:14}}>
         <div style={{fontSize:13,color:C.muted,marginBottom:8}}>新顯示名稱</div>
         <input value={newName} onChange={e=>setNewName(e.target.value)} maxLength={20} style={{width:"100%",border:`1px solid ${C.teal}`,borderRadius:8,padding:"8px 10px",fontSize:16,outline:"none",boxSizing:"border-box",marginBottom:10}}/>
         <div style={{display:"flex",gap:8}}>
           <button onClick={()=>setChangingName(false)} style={{flex:1,background:C.bg,border:"none",borderRadius:10,padding:10,cursor:"pointer"}}>取消</button>
-          <button onClick={async()=>{
-            await supabase.auth.updateUser({data:{display_name:newName}});
-            setChangingName(false);
-            window.location.reload();
-          }} style={{flex:2,background:C.teal,border:"none",borderRadius:10,padding:10,cursor:"pointer",color:"#fff",fontWeight:700}}>儲存</button>
+          <button onClick={async()=>{await supabase.auth.updateUser({data:{display_name:newName}});setChangingName(false);window.location.reload();}} style={{flex:2,background:C.teal,border:"none",borderRadius:10,padding:10,cursor:"pointer",color:"#fff",fontWeight:700}}>儲存</button>
         </div>
       </div>}
-      <button onClick={handleLogout} style={{width:"100%",background:C.bg,border:`1px solid ${C.coral}`,borderRadius:14,padding:14,fontSize:15,color:C.coral,cursor:"pointer",marginTop:10}}>登出</button>
+      <button onClick={handleLogout} style={{width:"100%",background:C.bg,border:`1px solid ${C.coral}`,borderRadius:14,padding:14,fontSize:15,color:C.coral,cursor:"pointer"}}>登出</button>
     </div>
   </div>;
 }
