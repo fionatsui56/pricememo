@@ -212,8 +212,8 @@ function BottomNav({tab,setTab}){
 function ProductCard({product,onClick,bookmarkIds,onToggleBookmark}){
   const prices=product.price_records||[];
   const best=getBest(prices);
-  const latest=prices.length?[...prices].sort((a,b)=>new Date(b.recorded_at)-new Date(a.recorded_at))[0]:null;
-  const f=latest?freshness(latest.recorded_at,product.category):null;
+  const bestRecord=prices.length?[...prices].sort((a,b)=>a.price-b.price)[0]:null;
+  const f=bestRecord?freshness(bestRecord.recorded_at,product.category):null;
   const cat=CATEGORIES.find(c=>c.id===product.category);
   const hasPromo=prices.some(p=>p.promo&&p.promo_expiry&&new Date(p.promo_expiry)>new Date());
   const isBookmarked=bookmarkIds&&bookmarkIds.includes(product.id);
@@ -229,8 +229,8 @@ function ProductCard({product,onClick,bookmarkIds,onToggleBookmark}){
             {hasPromo&&<span style={{fontSize:11,background:C.coral,color:"#fff",borderRadius:6,padding:"1px 6px",fontWeight:600}}>優惠</span>}
           </div>
           <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:4}}>{product.name}</div>
-          {latest&&f&&<div style={{fontSize:12,color:f.color}}>{f.dot} {f.label} · {latest.shop}</div>}
-          {!latest&&<div style={{fontSize:12,color:C.muted}}>未有價格記錄</div>}
+          {latest&&f&&<div style={{fontSize:12,color:f.color}}>{f.dot} {f.label} · {bestRecord.shop}</div>}
+          {!bestRecord&&<div style={{fontSize:12,color:C.muted}}>未有價格記錄</div>}
         </div>
         <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,minWidth:70}}>
           {prices.length>0&&<div style={{textAlign:"right"}}>
@@ -444,7 +444,7 @@ function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
         product_id:productId,user_id:user.id,
         user_name:user.user_metadata?.full_name||user.user_metadata?.display_name||user.email,
         price:Number(f.price),district:f.district||null,
-        shop:f.shopName||f.shopType,
+        shop:f.shopType==="其他地方"?f.shopName||"其他地方":f.shopType||f.shopName,
         promo:f.promo?f.promoType:null,
         promo_expiry:f.promo&&f.promoExpiry?f.promoExpiry:null,
       });
@@ -500,15 +500,13 @@ function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
             </div>
           </div>)}
         </div>
-        {/* Shop Name */}
-        <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
-          <div style={{fontSize:13,color:C.muted,marginBottom:6}}>
-            {f.shopType==="其他地方"?"請輸入地方名稱":f.shopType?`${f.shopType} - 分店名稱`:"店鋪名稱"}
-          </div>
+        {/* Custom input for 其他地方 */}
+        {f.shopType==="其他地方"&&<div style={{background:C.white,borderRadius:14,padding:14,marginBottom:10}}>
+          <div style={{fontSize:13,color:C.muted,marginBottom:6}}>請輸入地方名稱</div>
           <input value={f.shopName} onChange={e=>u("shopName",e.target.value)}
-            placeholder={f.shopType==="其他地方"?"e.g. 城門河邊士多、學校福利社":f.shopType?`e.g. ${f.shopType}旺角店`:"e.g. 旺角百佳、沙田惠康"}
+            placeholder="e.g. 城門河邊士多、學校福利社"
             style={{width:"100%",border:"none",outline:"none",fontSize:15,color:C.text,background:"transparent",boxSizing:"border-box"}}/>
-        </div>
+        </div>}
         {/* District - optional */}
         <div style={{background:C.white,borderRadius:14,padding:14,marginBottom:20}}>
           <div style={{fontSize:13,color:C.muted,marginBottom:6}}>地區（選填）</div>
@@ -516,7 +514,7 @@ function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
         </div>
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>setStep(1)} style={{flex:1,background:C.bg,border:"none",borderRadius:14,padding:16,fontSize:15,color:C.text,cursor:"pointer"}}>← 返回</button>
-          <button onClick={()=>(f.shopName||f.shopType)&&setStep(3)} style={{flex:2,background:(f.shopName||f.shopType)?C.yellow:"#ccc",border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:(f.shopName||f.shopType)?"pointer":"not-allowed"}}>下一步 →</button>
+          <button onClick={()=>{const ok=f.shopType&&(f.shopType!=="其他地方"||f.shopName);if(ok)setStep(3);}} style={{flex:2,background:(f.shopType&&(f.shopType!=="其他地方"||f.shopName))?C.yellow:"#ccc",border:"none",borderRadius:14,padding:16,fontSize:16,fontWeight:700,color:C.teal,cursor:"pointer"}}>下一步 →</button>
         </div>
       </div>}
 
@@ -543,7 +541,7 @@ function AddScreen({user,onAdded,prefillProduct,clearPrefill}){
         {/* Summary */}
         <div style={{background:C.tealLight,borderRadius:14,padding:14,marginBottom:16}}>
           <div style={{fontSize:13,fontWeight:700,color:C.teal,marginBottom:8}}>確認記錄</div>
-          {[["產品",`${f.brand?f.brand+" · ":""}${f.name}`],["店鋪",f.shopName||f.shopType||"-"],["地區",f.district||"（未填）"],["價格",f.price?`$${f.price}`:"-"]].map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}>
+          {[["產品",`${f.brand?f.brand+" · ":""}${f.name}`],["店鋪",f.shopType==="其他地方"?f.shopName||"其他地方":f.shopType||"-"],["地區",f.district||"（未填）"],["價格",f.price?`$${f.price}`:"-"]].map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}>
             <span style={{color:C.muted}}>{l}</span>
             <span style={{color:C.text,fontWeight:600}}>{v}</span>
           </div>)}
